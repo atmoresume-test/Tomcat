@@ -23,10 +23,10 @@ public class BattleField {
     public final APoint availableRightTop;
     public final APoint availableRightBottom;
 
-    private final APoint leftBottom;
-    private final APoint leftTop;
-    private final APoint rightTop;
-    private final APoint rightBottom;
+    private final LXXPoint leftBottom;
+    private final LXXPoint leftTop;
+    private final LXXPoint rightTop;
+    private final LXXPoint rightBottom;
 
     public final Wall bottom;
     public final Wall left;
@@ -93,6 +93,40 @@ public class BattleField {
 
     // this method is called very often, so keep it optimal
     public Wall getWall(APoint pos, double heading) {
+        final double normalHeadingTg = QuickMath.tan(heading % LXXConstants.RADIANS_90);
+        if (heading <= LXXConstants.RADIANS_90) {
+            final double rightTopTg = (rightTop.x - pos.getX()) / (rightTop.y - pos.getY());
+            if (normalHeadingTg < rightTopTg) {
+                return top;
+            } else {
+                return right;
+            }
+        } else if (heading <= LXXConstants.RADIANS_180) {
+            final double rightBottomTg = pos.getY() / (rightBottom.x - pos.getX());
+            if (normalHeadingTg < rightBottomTg) {
+                return right;
+            } else {
+                return bottom;
+            }
+        } else if (heading <= LXXConstants.RADIANS_270) {
+            final double leftBottomTg = pos.getX() / pos.getY();
+            if (normalHeadingTg < leftBottomTg) {
+                return bottom;
+            } else {
+                return left;
+            }
+        } else if (heading <= LXXConstants.RADIANS_360) {
+            final double leftTopTg = (leftTop.y - pos.getY()) / pos.getX();
+            if (normalHeadingTg < leftTopTg) {
+                return left;
+            } else {
+                return top;
+            }
+        }
+        throw new IllegalArgumentException("Invalid heading: " + heading);
+    }
+
+    public Wall getWallO(APoint pos, double heading) {
         final double alphaToLeftBottomAngle = pos.angleTo(leftBottom);
         if (alphaToLeftBottomAngle > heading) {
             final double alphaToRightBottomAngle = pos.angleTo(rightBottom);
@@ -143,28 +177,20 @@ public class BattleField {
     }
 
     private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        double hypotenuse = calculateHypotenuse(wall, robot, isClockwise);
+        double wallStick = 140;
         final double adjacentLeg = max(0, getDistanceToWall(wall, robot) - 4);
-        if (hypotenuse < adjacentLeg) {
+        if (wallStick < adjacentLeg) {
             return desiredHeading;
         }
-        double smoothAngle = 0;
-        try {
-            smoothAngle = (QuickMath.acos(adjacentLeg / hypotenuse) + LXXConstants.RADIANS_4) * (isClockwise ? 1 : -1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        double smoothAngle;
+        smoothAngle = (QuickMath.acos(adjacentLeg / wallStick) + LXXConstants.RADIANS_4) * (isClockwise ? 1 : -1);
         final double baseAngle = wall.wallType.fromCenterAngle;
         double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
-        if (!containsExact(robot.project(smoothedAngle, hypotenuse))) {
+        if (!containsExact(robot.project(smoothedAngle, wallStick))) {
             final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
             return smoothWall(secondWall, robot, smoothedAngle, isClockwise);
         }
         return smoothedAngle;
-    }
-
-    private double calculateHypotenuse(Wall wall, LXXRobotState robot, boolean isClockwise) {
-        return 120;
     }
 
     public boolean contains(APoint point) {

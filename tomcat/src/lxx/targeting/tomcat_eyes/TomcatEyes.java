@@ -13,7 +13,6 @@ import lxx.targeting.GunType;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManagerListener;
 import lxx.utils.LXXConstants;
-import lxx.utils.LXXUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,6 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         movementMetaProfile.update(target, robot);
         PropertiesManager.setDebugProperty("Enemy's preferred distance", String.valueOf(movementMetaProfile.getPreferredDistance()));
         PropertiesManager.setDebugProperty("Can enemy ram", String.valueOf(movementMetaProfile.canRam()));
-        PropertiesManager.setDebugProperty("Is enemy ramming", String.valueOf(isRammingNow(target)));
     }
 
     private MovementMetaProfile getMovementMetaProfile(LXXRobot t) {
@@ -50,12 +48,6 @@ public class TomcatEyes implements TargetManagerListener, BulletManagerListener 
         }
 
         return mmp;
-    }
-
-    public boolean isRammingNow(Target target) {
-        final MovementMetaProfile movementMetaProfile = getMovementMetaProfile(target);
-        return movementMetaProfile.canRam() && ((LXXUtils.anglesDiff(target.angleTo(robot), target.getAbsoluteHeadingRadians()) < LXXConstants.RADIANS_30 &&
-                target.getSpeed() > 0) || (robot.aDistance(target) < 50));
     }
 
     public void bulletHit(LXXBullet bullet) {

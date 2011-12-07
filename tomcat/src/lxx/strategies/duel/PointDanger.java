@@ -8,6 +8,7 @@ import lxx.bullets.LXXBullet;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
 
 class PointDanger {
 
@@ -25,7 +26,6 @@ class PointDanger {
         this.dangerOnFirstWave = dangerOnFirstWave;
         this.distToEnemy = distToEnemy;
         this.distanceToCenter = distanceToWall;
-        calculateDanger();
     }
 
     public double getDanger() {
@@ -34,7 +34,6 @@ class PointDanger {
 
     public void setMinDistToEnemy(double distToEnemy) {
         this.distToEnemy = min(this.distToEnemy, distToEnemy);
-        calculateDanger();
     }
 
     public void setMinDangerOnSecondWave(PointDanger minDangerOnSecondWave) {
@@ -49,7 +48,7 @@ class PointDanger {
     public void calculateDanger() {
         double thisDanger = dangerOnFirstWave * 120 +
                 distanceToCenter / 800 * 5 +
-                max(0, (500 - distToEnemy)) / distToEnemy * 15;
+                max(0, (500 - sqrt(distToEnemy))) / distToEnemy * 15;
         if (bullet != null) {
             thisDanger = thisDanger * bullet.getBullet().getPower();
         }

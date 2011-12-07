@@ -14,7 +14,6 @@ import lxx.strategies.Movement;
 import lxx.strategies.MovementDecision;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
@@ -42,12 +41,12 @@ public class WaveSurfingMovement implements Movement, Painter {
     private List<WSPoint> secondCWPoints;
     private List<WSPoint> secondCCWPoints;
 
-    public WaveSurfingMovement(Office office, TomcatEyes tomcatEyes) {
+    public WaveSurfingMovement(Office office) {
         this.robot = office.getRobot();
         this.targetManager = office.getTargetManager();
         this.enemyBulletManager = office.getEnemyBulletManager();
 
-        pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager(), tomcatEyes), robot.getState().getBattleField());
+        pointsGenerator = new PointsGenerator(new DistanceController(office.getTargetManager()), robot.getState().getBattleField());
     }
 
     public MovementDecision getMovementDecision() {
@@ -60,7 +59,7 @@ public class WaveSurfingMovement implements Movement, Painter {
         final Target.TargetState opponent = duelOpponent == null ? null : duelOpponent.getState();
         final APoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
 
-        return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getState(), opponent);
+        return pointsGenerator.getMovementDecision(surfPoint, surfPoint.angleTo(prevPrediction.minDangerPoint), robot.getState(), opponent);
     }
 
     private boolean needToReselectOrbitDirection(List<LXXBullet> bullets) {
@@ -140,6 +139,7 @@ public class WaveSurfingMovement implements Movement, Painter {
             if (prevPrediction != null && pnt.orbitDirection == prevPrediction.minDangerPoint.orbitDirection) {
                 pnt.danger.setDangerMultiplier(0.95);
             }
+            pnt.danger.calculateDanger();
         }
         return wsPoints;
     }

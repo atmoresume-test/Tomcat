@@ -43,6 +43,10 @@ public class LXXPoint extends Point2D.Double implements APoint, Serializable {
         return distance(p.getX(), p.getY());
     }
 
+    public double aDistanceSq(APoint p) {
+        return distanceSq(p.getX(), p.getY());
+    }
+
     public String toString() {
         return "[" + format.format(x) + ", " + format.format(y) + "]";
     }
@@ -53,6 +57,10 @@ public class LXXPoint extends Point2D.Double implements APoint, Serializable {
 
     public double angleTo(APoint another) {
         return LXXUtils.angle(this, another);
+    }
+
+    public double angleTo(LXXPoint another) {
+        return LXXUtils.angle(this.x, this.y, another.x, another.y);
     }
 
     public APoint project(DeltaVector result) {

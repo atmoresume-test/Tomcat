@@ -7,7 +7,6 @@ package lxx.strategies.duel;
 import lxx.LXXRobotState;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.targeting.tomcat_eyes.TomcatEyes;
 import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
 import lxx.utils.LXXUtils;
@@ -26,25 +25,18 @@ public class DistanceController {
     private static final int ANTI_RAM_DISTANCE = 150;
 
     private final TargetManager targetManager;
-    private final TomcatEyes tomcatEyes;
 
-    public DistanceController(TargetManager targetManager, TomcatEyes tomcatEyes) {
+    public DistanceController(TargetManager targetManager) {
         this.targetManager = targetManager;
-        this.tomcatEyes = tomcatEyes;
     }
 
     public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
-        return getDesiredHeadingWithBullets(surfPoint, robot, orbitDirection, SIMPLE_DISTANCE);
-    }
-
-    private double getDesiredHeadingWithBullets(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection,
-                                                double desiredDistance) {
         final double distanceBetween = robot.aDistance(surfPoint);
 
-        final double distanceDiff = distanceBetween - desiredDistance;
-        final double attackAngleKoeff = distanceDiff / desiredDistance;
+        final double distanceDiff = distanceBetween - SIMPLE_DISTANCE;
+        final double attackAngleKoeff = distanceDiff / SIMPLE_DISTANCE;
         final Target duelOpponent = targetManager.getDuelOpponent();
-        final double antiRamAngle = (duelOpponent != null && distanceBetween < ANTI_RAM_DISTANCE && tomcatEyes.isRammingNow(duelOpponent))
+        final double antiRamAngle = (duelOpponent != null && distanceBetween < ANTI_RAM_DISTANCE && duelOpponent.isRammingNow())
                 ? LXXConstants.RADIANS_50 * (ANTI_RAM_DISTANCE - distanceBetween) / ANTI_RAM_DISTANCE
                 : 0;
         final double maxAttackAngle = LXXConstants.RADIANS_100 + MAX_ATTACK_DELTA_WITHOUT_BULLETS;
