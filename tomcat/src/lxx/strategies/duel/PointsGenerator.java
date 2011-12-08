@@ -76,7 +76,10 @@ public class PointsGenerator {
     public List<WSPoint> generatePoints(OrbitDirection orbitDirection, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time) {
         final List<WSPoint> points = new ArrayList<WSPoint>();
         LXXPoint robotImgPos = robotImg.getPosition();
-        points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPos)));
+        if (robotImg.getSpeed() == 0) {
+            points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPos)));
+            points.get(0).isStop = true;
+        }
         final LXXPoint surfPoint = getSurfPoint(opponentImg, bullet);
         final double bulletSpeed = bullet.getSpeed();
         double travelledDistance = bullet.getTravelledDistance() + bulletSpeed * time;
@@ -100,10 +103,7 @@ public class PointsGenerator {
                 }
             }
             travelledDistance += bulletSpeed;
-        } while (firePosition.aDistanceSq(robotImgPos) > travelledDistance * travelledDistance);
-
-        points.get(0).isFirst = true;
-        points.get(points.size() - 1).isLast = true;
+        } while (firePosition.aDistance(robotImgPos) > travelledDistance);
 
         return points;
     }

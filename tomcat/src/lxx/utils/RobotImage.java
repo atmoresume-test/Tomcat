@@ -42,7 +42,9 @@ public final class RobotImage implements LXXRobotState {
     public RobotImage(LXXRobotState original) {
         this.position = new LXXPoint(original.getX(), original.getY());
         this.velocity = original.getVelocity();
+        this.speed = abs(velocity);
         this.heading = original.getHeadingRadians();
+        absoluteHeadingRadians = velocity >= 0 ? heading : Utils.normalAbsoluteAngle(heading + LXXConstants.RADIANS_180);
         this.battleField = original.getBattleField();
         this.turnRateRadians = original.getTurnRateRadians();
         this.energy = original.getEnergy();

@@ -13,8 +13,8 @@ class WSPoint extends LXXPoint implements Comparable<WSPoint> {
 
     public final PointDanger pointDanger;
     public OrbitDirection orbitDirection;
-    public boolean isFirst;
-    public boolean isLast;
+    public boolean isStop;
+    public int followPointsCount;
 
     WSPoint(APoint point, PointDanger danger) {
         super(point);
