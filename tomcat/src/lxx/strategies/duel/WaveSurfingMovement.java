@@ -58,7 +58,7 @@ public class WaveSurfingMovement implements Movement, Painter {
     }
 
     private OrbitDirection getOrbitDirection() {
-        return (prevPrediction.minDangerPoint.followPointsCount <= 1 || prevPrediction.nextOrbitDirection == null)
+        return (prevPrediction.minDangerPoint.followPointsCount <= 2 || prevPrediction.nextOrbitDirection == null)
                 ? prevPrediction.minDangerPoint.orbitDirection
                 : prevPrediction.nextOrbitDirection.getOpposite();
     }
@@ -73,9 +73,9 @@ public class WaveSurfingMovement implements Movement, Painter {
         futurePoses.addAll(nextPrediction.ccwPoints);
         Collections.sort(futurePoses);
         nextPrediction.minDangerPoint = futurePoses.get(0);
-        if (nextPrediction.minDangerPoint.followPointsCount > 1 && lxxBullets.size() >= 2) {
+        /*if (nextPrediction.minDangerPoint.followPointsCount > 1 && lxxBullets.size() >= 2) {
             nextPrediction.nextOrbitDirection = getSecondBulletOD(new RobotImage(robot.getState()), lxxBullets, futurePoses.get(0));
-        }
+        }*/
         prevPrediction = nextPrediction;
     }
 

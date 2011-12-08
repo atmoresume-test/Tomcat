@@ -17,7 +17,7 @@ class PointDanger {
 
     private double dangerMultiplier = 1;
     public double danger;
-    public double distToEnemy = Integer.MAX_VALUE;
+    public double distToEnemySq = Integer.MAX_VALUE;
 
     PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distanceToCenter) {
         this.bullet = bullet;
@@ -30,9 +30,10 @@ class PointDanger {
     }
 
     public void calculateDanger() {
+        double distToEnemy = sqrt(distToEnemySq);
         double thisDanger = dangerOnFirstWave * 120 +
                 distanceToCenter / 800 * 5 +
-                max(0, (500 - sqrt(distToEnemy))) / distToEnemy * 15;
+                max(0, (500 - distToEnemy)) / distToEnemy * 15;
         if (bullet != null) {
             thisDanger = thisDanger * bullet.getBullet().getPower();
         }

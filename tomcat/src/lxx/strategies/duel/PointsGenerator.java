@@ -99,7 +99,7 @@ public class PointsGenerator {
                 opponentImg.apply(enemyMd);
                 final LXXPoint oppPos = opponentImg.getPosition();
                 for (WSPoint prevPoint : points) {
-                    prevPoint.pointDanger.distToEnemy = min(prevPoint.pointDanger.distToEnemy, prevPoint.aDistanceSq(oppPos));
+                    prevPoint.pointDanger.distToEnemySq = min(prevPoint.pointDanger.distToEnemySq, prevPoint.aDistanceSq(oppPos));
                 }
             }
             travelledDistance += bulletSpeed;

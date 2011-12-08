@@ -99,28 +99,28 @@ public class BattleField {
     // this method is called very often, so keep it optimal
     public Wall getWall(LXXPoint pos, double heading) {
         final double normalHeadingTg = QuickMath.tan(heading % LXXConstants.RADIANS_90);
-        if (heading <= LXXConstants.RADIANS_90) {
+        if (heading < LXXConstants.RADIANS_90) {
             final double rightTopTg = (rightTop.x - pos.x) / (rightTop.y - pos.y);
             if (normalHeadingTg < rightTopTg) {
                 return top;
             } else {
                 return right;
             }
-        } else if (heading <= LXXConstants.RADIANS_180) {
+        } else if (heading < LXXConstants.RADIANS_180) {
             final double rightBottomTg = pos.y / (rightBottom.x - pos.x);
             if (normalHeadingTg < rightBottomTg) {
                 return right;
             } else {
                 return bottom;
             }
-        } else if (heading <= LXXConstants.RADIANS_270) {
+        } else if (heading < LXXConstants.RADIANS_270) {
             final double leftBottomTg = pos.x / pos.y;
             if (normalHeadingTg < leftBottomTg) {
                 return bottom;
             } else {
                 return left;
             }
-        } else if (heading <= LXXConstants.RADIANS_360) {
+        } else if (heading < LXXConstants.RADIANS_360) {
             final double leftTopTg = (leftTop.y - pos.y) / pos.x;
             if (normalHeadingTg < leftTopTg) {
                 return left;
