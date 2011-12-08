@@ -56,7 +56,8 @@ public final class RobotImage implements LXXRobotState {
         final double desiredVelocity = movementDecision.getDesiredVelocity();
         if (abs(signum(velocity) - signum(desiredVelocity)) <= 1) {
             acceleration = LXXUtils.limit(-Rules.DECELERATION, abs(desiredVelocity) - speed, Rules.ACCELERATION);
-            velocity = (speed += acceleration) * signum(velocity != 0 ? velocity : desiredVelocity);
+            speed += acceleration;
+            velocity = speed * signum(velocity != 0 ? velocity : desiredVelocity);
         } else {
             // robocode has difficult 2-step rules in this case,
             // but we will keep it simple
@@ -64,7 +65,8 @@ public final class RobotImage implements LXXRobotState {
                 velocity -= Rules.DECELERATION * signum(velocity);
                 speed -= Rules.DECELERATION;
             } else {
-                velocity = speed = 0;
+                velocity = 0;
+                speed = 0;
             }
         }
 
