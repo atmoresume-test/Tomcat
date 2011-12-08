@@ -4,7 +4,6 @@
 
 package lxx.utils;
 
-import lxx.LXXRobotState;
 import robocode.util.Utils;
 
 import java.awt.*;
@@ -18,12 +17,13 @@ import static java.lang.Math.max;
  */
 public class BattleField {
 
+    public static final double WALL_STICK = 140;
+
     public final APoint availableLeftBottom;
     public final APoint availableLeftTop;
     public final APoint availableRightTop;
     public final APoint availableRightBottom;
 
-    private final LXXPoint leftBottom;
     private final LXXPoint leftTop;
     private final LXXPoint rightTop;
     private final LXXPoint rightBottom;
@@ -42,7 +42,10 @@ public class BattleField {
     public final Rectangle2D.Double availableBattleFieldRectangle;
     public final Rectangle2D.Double exactAvailableBattleFieldRectangle;
 
-    public final APoint center;
+    public final Interval noSmoothX;
+    public final Interval noSmoothY;
+
+    public final LXXPoint center;
 
     public final int width;
     public final int height;
@@ -63,7 +66,6 @@ public class BattleField {
         final int leftX = 0;
         final int rightX = x * 2 + width;
 
-        leftBottom = new LXXPoint(leftX, bottomY);
         leftTop = new LXXPoint(leftX, topY);
         rightTop = new LXXPoint(rightX, topY);
         rightBottom = new LXXPoint(rightX, bottomY);
@@ -89,34 +91,37 @@ public class BattleField {
 
         this.width = width;
         this.height = height;
+
+        noSmoothX = new Interval((int) WALL_STICK, width - (int) WALL_STICK);
+        noSmoothY = new Interval((int) WALL_STICK, height - (int) WALL_STICK);
     }
 
     // this method is called very often, so keep it optimal
-    public Wall getWall(APoint pos, double heading) {
+    public Wall getWall(LXXPoint pos, double heading) {
         final double normalHeadingTg = QuickMath.tan(heading % LXXConstants.RADIANS_90);
         if (heading <= LXXConstants.RADIANS_90) {
-            final double rightTopTg = (rightTop.x - pos.getX()) / (rightTop.y - pos.getY());
+            final double rightTopTg = (rightTop.x - pos.x) / (rightTop.y - pos.y);
             if (normalHeadingTg < rightTopTg) {
                 return top;
             } else {
                 return right;
             }
         } else if (heading <= LXXConstants.RADIANS_180) {
-            final double rightBottomTg = pos.getY() / (rightBottom.x - pos.getX());
+            final double rightBottomTg = pos.y / (rightBottom.x - pos.x);
             if (normalHeadingTg < rightBottomTg) {
                 return right;
             } else {
                 return bottom;
             }
         } else if (heading <= LXXConstants.RADIANS_270) {
-            final double leftBottomTg = pos.getX() / pos.getY();
+            final double leftBottomTg = pos.x / pos.y;
             if (normalHeadingTg < leftBottomTg) {
                 return bottom;
             } else {
                 return left;
             }
         } else if (heading <= LXXConstants.RADIANS_360) {
-            final double leftTopTg = (leftTop.y - pos.getY()) / pos.getX();
+            final double leftTopTg = (leftTop.y - pos.y) / pos.x;
             if (normalHeadingTg < leftTopTg) {
                 return left;
             } else {
@@ -126,79 +131,44 @@ public class BattleField {
         throw new IllegalArgumentException("Invalid heading: " + heading);
     }
 
-    public Wall getWallO(APoint pos, double heading) {
-        final double alphaToLeftBottomAngle = pos.angleTo(leftBottom);
-        if (alphaToLeftBottomAngle > heading) {
-            final double alphaToRightBottomAngle = pos.angleTo(rightBottom);
-            if (heading >= alphaToRightBottomAngle) {
-                return bottom;
-            } else {
-                final double alphaToRightTopAngle = pos.angleTo(rightTop);
-                if (heading >= alphaToRightTopAngle) {
-                    return right;
-                } else {
-                    return top;
-                }
-            }
-        } else {
-            double alphaToLeftTopAngle = pos.angleTo(leftTop);
-            if (alphaToLeftTopAngle < alphaToLeftBottomAngle) {
-                alphaToLeftTopAngle = LXXConstants.RADIANS_360;
-            }
-            if (heading < alphaToLeftTopAngle) {
-                return left;
-            } else {
-                return top;
-            }
-        }
-    }
-
-    public double getBearingOffsetToWall(APoint pnt, double heading) {
+    public double getBearingOffsetToWall(LXXPoint pnt, double heading) {
         return Utils.normalRelativeAngle(getWall(pnt, heading).wallType.fromCenterAngle - heading);
     }
 
-    public double getDistanceToWall(Wall wall, APoint pnt) {
+    public double getDistanceToWall(Wall wall, LXXPoint pnt) {
         switch (wall.wallType) {
             case TOP:
-                return availableTopY - pnt.getY();
+                return availableTopY - pnt.y;
             case RIGHT:
-                return availableRightX - pnt.getX();
+                return availableRightX - pnt.x;
             case BOTTOM:
-                return pnt.getY() - availableBottomY;
+                return pnt.y - availableBottomY;
             case LEFT:
-                return pnt.getX() - availableLeftX;
+                return pnt.x - availableLeftX;
             default:
                 throw new IllegalArgumentException("Unknown wallType: " + wall.wallType);
         }
     }
 
-    public double smoothWalls(LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        return smoothWall(getWall(robot, desiredHeading), robot, desiredHeading, isClockwise);
+    public double smoothWalls(LXXPoint pnt, double desiredHeading, boolean isClockwise) {
+        return smoothWall(getWall(pnt, desiredHeading), pnt, desiredHeading, isClockwise);
     }
 
-    private double smoothWall(Wall wall, LXXRobotState robot, double desiredHeading, boolean isClockwise) {
-        double wallStick = 140;
-        final double adjacentLeg = max(0, getDistanceToWall(wall, robot) - 4);
-        if (wallStick < adjacentLeg) {
+    private double smoothWall(Wall wall, LXXPoint pnt, double desiredHeading, boolean isClockwise) {
+        final double adjacentLeg = max(0, getDistanceToWall(wall, pnt) - 4);
+        if (WALL_STICK < adjacentLeg) {
             return desiredHeading;
         }
         double smoothAngle;
-        smoothAngle = (QuickMath.acos(adjacentLeg / wallStick) + LXXConstants.RADIANS_4) * (isClockwise ? 1 : -1);
+        smoothAngle = (QuickMath.acos(adjacentLeg / WALL_STICK) + LXXConstants.RADIANS_4) * (isClockwise ? 1 : -1);
         final double baseAngle = wall.wallType.fromCenterAngle;
         double smoothedAngle = Utils.normalAbsoluteAngle(baseAngle + smoothAngle);
-        if (!containsExact(robot.project(smoothedAngle, wallStick))) {
-            final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
-            return smoothWall(secondWall, robot, smoothedAngle, isClockwise);
-        }
-        return smoothedAngle;
+        final Wall secondWall = isClockwise ? wall.clockwiseWall : wall.counterClockwiseWall;
+        return smoothWall(secondWall, pnt, smoothedAngle, isClockwise);
     }
 
     public boolean contains(APoint point) {
         return availableBattleFieldRectangle.contains(point.getX(), point.getY());
-    }
-
-    public boolean containsExact(APoint point) {
-        return exactAvailableBattleFieldRectangle.contains(point.getX(), point.getY());
     }
 
     public class Wall {

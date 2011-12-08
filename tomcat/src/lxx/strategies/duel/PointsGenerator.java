@@ -28,24 +28,18 @@ public class PointsGenerator {
         this.battleField = battleField;
     }
 
-    private PointDanger getPointDanger(LXXBullet lxxBullet, LXXRobotState robot, LXXRobotState duelOpponent) {
-        final double firstWaveDng = getWaveDanger(robot, lxxBullet);
-        final double distToEnemy = duelOpponent != null ? robot.aDistance(duelOpponent) : 5;
-
-        return new PointDanger(lxxBullet, firstWaveDng, distToEnemy, battleField.center.aDistance(robot));
+    private PointDanger getPointDanger(LXXBullet lxxBullet, LXXPoint robotPos) {
+        return new PointDanger(lxxBullet, lxxBullet != null ? getWaveDanger(robotPos, lxxBullet) : 0, battleField.center.aDistance(robotPos));
     }
 
-    private double getWaveDanger(APoint pnt, LXXBullet bullet) {
-        if (bullet == null) {
-            return 0;
-        }
+    private double getWaveDanger(LXXPoint pnt, LXXBullet bullet) {
         final EnemyBulletPredictionData aimPredictionData = (EnemyBulletPredictionData) bullet.getAimPredictionData();
         final List<PastBearingOffset> predictedBearingOffsets = aimPredictionData.getPredictedBearingOffsets();
         if (predictedBearingOffsets.size() == 0) {
             return 0;
         }
-        final APoint firePos = bullet.getFirePosition();
-        final double alpha = firePos.angleTo(pnt);
+        final LXXPoint firePos = bullet.getFirePosition();
+        final double alpha = LXXUtils.angle(firePos.x, firePos.y, pnt.x, pnt.y);
         final double bearingOffset = Utils.normalRelativeAngle(alpha - bullet.noBearingOffset());
         final double robotWidthInRadians = LXXUtils.getRobotWidthInRadians(alpha, firePos.aDistance(pnt));
 
@@ -67,7 +61,8 @@ public class PointsGenerator {
         }
 
         double intersection = 0;
-        final IntervalDouble robotIval = new IntervalDouble(bearingOffset - robotWidthInRadians / 2, bearingOffset + robotWidthInRadians / 2);
+        final double halfRobotWidthInRadians = robotWidthInRadians / 2;
+        final IntervalDouble robotIval = new IntervalDouble(bearingOffset - halfRobotWidthInRadians, bearingOffset + halfRobotWidthInRadians);
         for (IntervalDouble shadow : bullet.getMergedShadows()) {
             if (robotIval.intersects(shadow)) {
                 intersection += robotIval.intersection(shadow);
@@ -78,80 +73,53 @@ public class PointsGenerator {
         return bulletsDanger;
     }
 
-    public List<WSPoint> generatePoints(APoint dstPoint, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time) {
+    public List<WSPoint> generatePoints(OrbitDirection orbitDirection, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time) {
         final List<WSPoint> points = new ArrayList<WSPoint>();
-
-        generatePoints(dstPoint, bullet, robotImg, opponentImg, time, points);
-
-        return points;
-    }
-
-    public int generatePoints(APoint dstPoint, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg, int time, List<WSPoint> points) {
-
-        final APoint surfPoint = getSurfPoint(opponentImg, bullet);
-        final double travelledDistance = bullet.getTravelledDistance();
-        final APoint firePosition = bullet.getFirePosition();
+        LXXPoint robotImgPos = robotImg.getPosition();
+        points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPos)));
+        final LXXPoint surfPoint = getSurfPoint(opponentImg, bullet);
         final double bulletSpeed = bullet.getSpeed();
+        double travelledDistance = bullet.getTravelledDistance() + bulletSpeed * time;
         final MovementDecision enemyMd;
         if (opponentImg != null) {
             enemyMd = new MovementDecision(Rules.MAX_VELOCITY * signum(opponentImg.getVelocity()), 0);
         } else {
             enemyMd = new MovementDecision(0, 0);
         }
-        final double alphaToDst = surfPoint.angleTo(dstPoint);
+        final LXXPoint firePosition = bullet.getFirePosition();
         do {
-            final MovementDecision md = getMovementDecision(surfPoint, alphaToDst, robotImg, opponentImg);
+            final MovementDecision md = getMovementDecision(surfPoint, orbitDirection, robotImg, opponentImg, 8);
             robotImg.apply(md);
+            robotImgPos = robotImg.getPosition();
+            points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImgPos)));
             if (opponentImg != null) {
                 opponentImg.apply(enemyMd);
-            }
-            if (points != null) {
-                points.add(new WSPoint(robotImg, getPointDanger(bullet, robotImg, opponentImg)));
-                if (opponentImg != null) {
-                    for (WSPoint prevPoint : points) {
-                        prevPoint.danger.setMinDistToEnemy(prevPoint.aDistanceSq(opponentImg));
-                    }
+                final LXXPoint oppPos = opponentImg.getPosition();
+                for (WSPoint prevPoint : points) {
+                    prevPoint.pointDanger.distToEnemy = min(prevPoint.pointDanger.distToEnemy, prevPoint.aDistanceSq(oppPos));
                 }
             }
-            time++;
-        } while (firePosition.aDistance(robotImg) - travelledDistance > bulletSpeed * time);
+            travelledDistance += bulletSpeed;
+        } while (firePosition.aDistanceSq(robotImgPos) > travelledDistance * travelledDistance);
 
-        return time;
+        points.get(0).isFirst = true;
+        points.get(points.size() - 1).isLast = true;
+
+        return points;
     }
 
-    public int playForwardWaveSuring(APoint dstPoint, LXXBullet bullet, RobotImage robotImg, RobotImage opponentImg) {
-        return generatePoints(dstPoint, bullet, robotImg, opponentImg, 0, null);
-    }
-
-    public MovementDecision getMovementDecision(APoint surfPoint, double alphaToDst, LXXRobotState robot, LXXRobotState opponent) {
-        final double alphaToRobot = surfPoint.angleTo(robot);
-        final double acceleratedSpeed = min(Rules.MAX_VELOCITY, robot.getSpeed() + Rules.ACCELERATION);
-        final double desiredSpeed = (robot.aDistance(surfPoint.project(alphaToDst, surfPoint.aDistance(robot))) > LXXUtils.getStopDistance(acceleratedSpeed) + acceleratedSpeed + 1)
-                ? 8
-                : 0;
-
-        final OrbitDirection orbitDirection;
-        if (Utils.normalRelativeAngle(alphaToDst - alphaToRobot) >= 0) {
-            orbitDirection = OrbitDirection.CLOCKWISE;
-        } else {
-            orbitDirection = OrbitDirection.COUNTER_CLOCKWISE;
-        }
-
-        return getMovementDecision(surfPoint, orbitDirection, robot, opponent, desiredSpeed);
-    }
-
-    private MovementDecision getMovementDecision(APoint surfPoint, OrbitDirection orbitDirection,
-                                                 LXXRobotState robot, LXXRobotState opponent, double desiredSpeed) {
-        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robot, orbitDirection);
-        desiredHeading = battleField.smoothWalls(robot, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
-
-        double direction = robot.getAbsoluteHeadingRadians();
-        if (LXXUtils.anglesDiff(direction, desiredHeading) > LXXConstants.RADIANS_90) {
-            direction = Utils.normalAbsoluteAngle(direction + LXXConstants.RADIANS_180);
+    public MovementDecision getMovementDecision(LXXPoint surfPoint, OrbitDirection orbitDirection,
+                                                LXXRobotState robot, LXXRobotState opponent, double desiredSpeed) {
+        final LXXPoint robotPos = robot.getPosition();
+        double desiredHeading = distanceController.getDesiredHeading(surfPoint, robotPos, orbitDirection);
+        if (robotPos.x < battleField.noSmoothX.a || robotPos.x > battleField.noSmoothX.b ||
+                robotPos.y < battleField.noSmoothY.a || robotPos.y > battleField.noSmoothY.b) {
+            desiredHeading = battleField.smoothWalls(robotPos, desiredHeading, orbitDirection == OrbitDirection.CLOCKWISE);
         }
         if (opponent != null) {
-            double angleToOpponent = robot.angleTo(opponent);
-            if (((LXXUtils.anglesDiff(direction, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.2))) {
+            final LXXPoint oppPos = opponent.getPosition();
+            double angleToOpponent = LXXUtils.angle(robotPos.x, robotPos.y, oppPos.x, oppPos.y);
+            if (((LXXUtils.anglesDiff(desiredHeading, angleToOpponent) < LXXUtils.getRobotWidthInRadians(angleToOpponent, robot.aDistance(opponent)) * 1.2))) {
                 desiredSpeed = 0;
             }
         }
@@ -159,7 +127,7 @@ public class PointsGenerator {
         return MovementDecision.toMovementDecision(robot, desiredSpeed, desiredHeading);
     }
 
-    public APoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
+    public LXXPoint getSurfPoint(LXXRobotState duelOpponent, LXXBullet bullet) {
         if (duelOpponent == null) {
             return bullet.getFirePosition();
         }

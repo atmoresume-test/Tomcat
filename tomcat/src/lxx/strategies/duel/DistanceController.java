@@ -4,11 +4,10 @@
 
 package lxx.strategies.duel;
 
-import lxx.LXXRobotState;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
-import lxx.utils.APoint;
 import lxx.utils.LXXConstants;
+import lxx.utils.LXXPoint;
 import lxx.utils.LXXUtils;
 import robocode.util.Utils;
 
@@ -30,8 +29,8 @@ public class DistanceController {
         this.targetManager = targetManager;
     }
 
-    public double getDesiredHeading(APoint surfPoint, LXXRobotState robot, OrbitDirection orbitDirection) {
-        final double distanceBetween = robot.aDistance(surfPoint);
+    public double getDesiredHeading(LXXPoint surfPoint, LXXPoint robotPos, OrbitDirection orbitDirection) {
+        final double distanceBetween = robotPos.aDistance(surfPoint);
 
         final double distanceDiff = distanceBetween - SIMPLE_DISTANCE;
         final double attackAngleKoeff = distanceDiff / SIMPLE_DISTANCE;
@@ -43,7 +42,7 @@ public class DistanceController {
         final double minAttackAngle = LXXConstants.RADIANS_80 - MIN_ATTACK_DELTA_WITHOUT_BULLETS - antiRamAngle / 2;
         final double attackAngle = LXXConstants.RADIANS_90 + ((LXXConstants.RADIANS_30 + antiRamAngle) * attackAngleKoeff);
 
-        return Utils.normalAbsoluteAngle(surfPoint.angleTo(robot) +
+        return Utils.normalAbsoluteAngle(LXXUtils.angle(surfPoint.x, surfPoint.y, robotPos.x, robotPos.y) +
                 LXXUtils.limit(minAttackAngle, attackAngle, maxAttackAngle) * orbitDirection.sign);
     }
 

@@ -31,4 +31,11 @@ public class AEGMPredictionData extends EnemyBulletPredictionData {
         return allLogsPredictions.get(log);
     }
 
+    public int getLogsCount() {
+        return allLogsPredictions.size();
+    }
+
+    public void addBearingOffsets(AdvancedEnemyGunModel.Log log, List<PastBearingOffset> bearingOffsets) {
+        allLogsPredictions.put(log, bearingOffsets);
+    }
 }

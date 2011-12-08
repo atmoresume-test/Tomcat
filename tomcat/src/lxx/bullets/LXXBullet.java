@@ -7,10 +7,7 @@ package lxx.bullets;
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.bullets.enemy.BulletShadow;
-import lxx.utils.APoint;
-import lxx.utils.AimingPredictionData;
-import lxx.utils.IntervalDouble;
-import lxx.utils.LXXUtils;
+import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
 import robocode.util.Utils;
@@ -30,12 +27,14 @@ public class LXXBullet {
     private AimingPredictionData aimPredictionData;
     private final Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
     private final List<IntervalDouble> mergedShadows = new ArrayList<IntervalDouble>();
+    private LXXPoint firePosition;
 
     public LXXBullet(Bullet bullet, Wave w, AimingPredictionData aimPredictionData) {
         this.bullet = bullet;
         this.aimPredictionData = aimPredictionData;
         this.wave = w;
 
+        firePosition = new LXXPoint(wave.getSourcePosAtFireTime());
         state = LXXBulletState.ON_AIR;
     }
 
@@ -51,8 +50,8 @@ public class LXXBullet {
         return wave.getTargetStateAtLaunchTime().getRobot();
     }
 
-    public APoint getFirePosition() {
-        return wave.getSourceStateAtFireTime();
+    public LXXPoint getFirePosition() {
+        return firePosition;
     }
 
     public double getTravelledDistance() {
@@ -122,10 +121,11 @@ public class LXXBullet {
         LXXBullet lxxBullet = (LXXBullet) o;
 
         if (wave.getLaunchTime() != lxxBullet.wave.getLaunchTime()) return false;
-        if (!wave.getSourceStateAtFireTime().getRobot().getName().equals(lxxBullet.wave.getSourceStateAtFireTime().getRobot().getName()))
+        if (wave.getSourceStateAtFireTime().getRobot().getName().equals(lxxBullet.wave.getSourceStateAtFireTime().getRobot().getName()))
+            return true;
+        else
             return false;
 
-        return true;
     }
 
     public int hashCode() {

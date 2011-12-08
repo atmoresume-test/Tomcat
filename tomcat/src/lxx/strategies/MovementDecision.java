@@ -12,7 +12,7 @@ import robocode.util.Utils;
 
 import java.io.Serializable;
 
-import static java.lang.Math.*;
+import static java.lang.Math.toDegrees;
 
 public class MovementDecision implements Serializable {
 
@@ -37,10 +37,11 @@ public class MovementDecision implements Serializable {
             desiredSpeed = Rules.MAX_VELOCITY;
         }
 
-        final boolean wantToGoFront = LXXUtils.anglesDiff(robot.getHeadingRadians(), desiredHeading) < LXXConstants.RADIANS_90;
+        final double headingRadians = robot.getHeadingRadians();
+        final boolean wantToGoFront = LXXUtils.anglesDiff(headingRadians, desiredHeading) < LXXConstants.RADIANS_90;
         final double normalizedDesiredHeading = wantToGoFront ? desiredHeading : Utils.normalAbsoluteAngle(desiredHeading + LXXConstants.RADIANS_180);
 
-        final double turnRemaining = Utils.normalRelativeAngle(normalizedDesiredHeading - robot.getHeadingRadians());
+        final double turnRemaining = Utils.normalRelativeAngle(normalizedDesiredHeading - headingRadians);
         final double speed = robot.getSpeed();
         final double turnRateRadiansLimit = Rules.getTurnRateRadians(speed);
         final double turnRateRadians =

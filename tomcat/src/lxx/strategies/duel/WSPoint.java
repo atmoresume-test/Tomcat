@@ -11,15 +11,17 @@ import static java.lang.Math.signum;
 
 class WSPoint extends LXXPoint implements Comparable<WSPoint> {
 
-    public final PointDanger danger;
+    public final PointDanger pointDanger;
     public OrbitDirection orbitDirection;
+    public boolean isFirst;
+    public boolean isLast;
 
     WSPoint(APoint point, PointDanger danger) {
         super(point);
-        this.danger = danger;
+        this.pointDanger = danger;
     }
 
     public int compareTo(WSPoint o) {
-        return (int) signum(danger.getDanger() - o.danger.getDanger());
+        return (int) signum(pointDanger.danger - o.pointDanger.danger);
     }
 }

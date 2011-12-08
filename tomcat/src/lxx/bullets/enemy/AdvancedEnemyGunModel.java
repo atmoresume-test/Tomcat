@@ -5,6 +5,7 @@
 package lxx.bullets.enemy;
 
 import lxx.LXXRobot;
+import lxx.RobotListener;
 import lxx.bullets.BulletManagerListener;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
@@ -19,6 +20,7 @@ import lxx.utils.ps_tree.PSTree;
 import lxx.utils.ps_tree.PSTreeEntry;
 import lxx.utils.wave.Wave;
 import lxx.utils.wave.WaveCallback;
+import robocode.Event;
 import robocode.Rules;
 
 import java.util.*;
@@ -27,7 +29,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static java.lang.StrictMath.signum;
 
-public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallback {
+public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallback, RobotListener {
 
     public static final int FIRE_DETECTION_LATENCY = 2;
 
@@ -42,6 +44,7 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
     public AdvancedEnemyGunModel(TurnSnapshotsLog turnSnapshotsLog, Office office) {
         this.turnSnapshotsLog = turnSnapshotsLog;
         this.office = office;
+        office.getRobot().addListener(this);
     }
 
     public EnemyBulletPredictionData getPredictionData(LXXRobot t, final TurnSnapshot turnSnapshot, Collection<BulletShadow> bulletShadows) {
@@ -127,6 +130,31 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
     public void bulletPassing(LXXBullet bullet) {
     }
 
+    @Override
+    public void onEvent(Event event) {
+        /*if (event instanceof TickEvent) {
+            for (LXXBullet bullet : bulletsByWaves.values()) {
+                final LogSet logSet = getLogSet(bullet.getOwner().getName());
+                int totalLogsToCalculate = logSet.hitLogsSet.size() + logSet.hitLogsSet.size();
+                final AEGMPredictionData aimPredictionData = (AEGMPredictionData) bullet.getAimPredictionData();
+                int logsToCalculate = (int) ((totalLogsToCalculate - aimPredictionData.getLogsCount()) / bullet.getFlightTime(office.getRobot()));
+                int calculatedLogs = 0;
+                List<Log> allLogs = new ArrayList<Log>(logSet.hitLogsSet);
+                allLogs.addAll(logSet.visitLogsSet);
+                for (Log log : allLogs) {
+                    if (aimPredictionData.getBearingOffsets(log) != null) {
+                        continue;
+                    }
+                    List<PastBearingOffset> bearingOffsets = log.getBearingOffsets(aimPredictionData.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows(), aimPredictionData.getPredictionRoundTime());
+                    aimPredictionData.addBearingOffsets(log, bearingOffsets);
+                    if (calculatedLogs++ == logsToCalculate) {
+                        break;
+                    }
+                }
+            }
+        }*/
+    }
+
     class Log {
 
         private PSTree<UndirectedGuessFactor> log;
@@ -163,50 +191,36 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             final double maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);
 
             final List<PastBearingOffset> bearingOffsets = new LinkedList<PastBearingOffset>();
-            int notShadowedBulletsCount = 0;
+            int i = 0;
             for (PSTreeEntry<UndirectedGuessFactor> entry : entries) {
                 if (entry.predicate.roundTime > roundTimeLimit) {
                     continue;
                 }
-                if (notShadowedBulletsCount == 5) {
+                if (i++ == 5) {
                     break;
                 }
                 if (entry.result.lateralDirection != 0 && lateralDirection != 0) {
 
                     final double bearingOffset = entry.result.guessFactor * entry.result.lateralDirection * lateralDirection * maxEscapeAngleQuick;
-                    final double danger;
                     if (isShadowed(bearingOffset, bulletShadows)) {
-                        danger = 0.01;
-                    } else {
-                        notShadowedBulletsCount++;
-                        danger = 1;
+                        i--;
+                        continue;
                     }
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset, danger));
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset, 1));
                 } else {
-                    boolean hasNotShadowed = false;
-                    double danger;
-                    final double bearingOffset1 = entry.result.guessFactor * 1 * maxEscapeAngleQuick;
+                    final double bearingOffset1 = entry.result.guessFactor * maxEscapeAngleQuick;
                     if (isShadowed(bearingOffset1, bulletShadows)) {
-                        danger = 0.01;
-                    } else {
-                        hasNotShadowed = true;
-                        danger = 1;
+                        i--;
+                        continue;
                     }
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset1, danger));
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset1, 1));
 
-                    final double bearingOffset2 = entry.result.guessFactor * -1 * maxEscapeAngleQuick;
+                    final double bearingOffset2 = -entry.result.guessFactor * maxEscapeAngleQuick;
                     if (isShadowed(bearingOffset2, bulletShadows)) {
-                        danger = 0.01;
-                    } else {
-                        hasNotShadowed = true;
-                        danger = 1;
-
+                        i--;
+                        continue;
                     }
-                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset2, danger));
-
-                    if (hasNotShadowed) {
-                        notShadowedBulletsCount++;
-                    }
+                    bearingOffsets.add(new PastBearingOffset(entry.predicate, bearingOffset2, 1));
                 }
             }
 
@@ -223,13 +237,12 @@ public class AdvancedEnemyGunModel implements BulletManagerListener, WaveCallbac
             return false;
         }
 
-        private Map<Attribute, Interval> getLimits(TurnSnapshot center) {
-            final Map<Attribute, Interval> res = new HashMap<Attribute, Interval>();
+        private Interval[] getLimits(TurnSnapshot center) {
+            final Interval[] res = new Interval[AttributesManager.attributesCount()];
             for (Attribute attr : attrs) {
                 double delta = halfSideLength.get(attr);
-                res.put(attr,
-                        new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
-                                (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta))));
+                res[attr.id] = new Interval((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
+                        (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta)));
             }
 
             return res;

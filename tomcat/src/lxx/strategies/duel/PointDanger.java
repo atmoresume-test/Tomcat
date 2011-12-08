@@ -7,7 +7,6 @@ package lxx.strategies.duel;
 import lxx.bullets.LXXBullet;
 
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 
 class PointDanger {
@@ -16,29 +15,14 @@ class PointDanger {
     private final double dangerOnFirstWave;
     private final double distanceToCenter;
 
-    private double distToEnemy = Integer.MAX_VALUE;
-    private PointDanger minDangerOnSecondWave;
-    private double danger;
     private double dangerMultiplier = 1;
+    public double danger;
+    public double distToEnemy = Integer.MAX_VALUE;
 
-    PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distToEnemy, double distanceToWall) {
+    PointDanger(LXXBullet bullet, double dangerOnFirstWave, double distanceToCenter) {
         this.bullet = bullet;
         this.dangerOnFirstWave = dangerOnFirstWave;
-        this.distToEnemy = distToEnemy;
-        this.distanceToCenter = distanceToWall;
-    }
-
-    public double getDanger() {
-        return danger;
-    }
-
-    public void setMinDistToEnemy(double distToEnemy) {
-        this.distToEnemy = min(this.distToEnemy, distToEnemy);
-    }
-
-    public void setMinDangerOnSecondWave(PointDanger minDangerOnSecondWave) {
-        this.minDangerOnSecondWave = minDangerOnSecondWave;
-        calculateDanger();
+        this.distanceToCenter = distanceToCenter;
     }
 
     public void setDangerMultiplier(double dangerMultiplier) {
@@ -53,14 +37,8 @@ class PointDanger {
             thisDanger = thisDanger * bullet.getBullet().getPower();
         }
 
-        double secondDanger;
-        if (minDangerOnSecondWave != null) {
-            secondDanger = minDangerOnSecondWave.getDanger();
-        } else {
-            secondDanger = 0;
-        }
 
-        danger = (thisDanger + (secondDanger / 10)) * dangerMultiplier;
+        danger = thisDanger * dangerMultiplier;
     }
 
 }

@@ -43,8 +43,12 @@ public class LXXPoint extends Point2D.Double implements APoint, Serializable {
         return distance(p.getX(), p.getY());
     }
 
-    public double aDistanceSq(APoint p) {
-        return distanceSq(p.getX(), p.getY());
+    public double aDistance(LXXPoint p) {
+        return distance(p.x, p.y);
+    }
+
+    public double aDistanceSq(LXXPoint p) {
+        return distanceSq(p.x, p.y);
     }
 
     public String toString() {
@@ -71,7 +75,7 @@ public class LXXPoint extends Point2D.Double implements APoint, Serializable {
         return distanceToWall(this, battleField, direction);
     }
 
-    public static double distanceToWall(APoint pnt, BattleField battleField, double direction) {
+    public static double distanceToWall(LXXPoint pnt, BattleField battleField, double direction) {
         final BattleField.Wall w = battleField.getWall(pnt, direction);
         return battleField.getDistanceToWall(w, pnt) / abs(QuickMath.cos(direction - w.wallType.fromCenterAngle));
     }
