@@ -8,9 +8,10 @@ import lxx.data_analysis.DataPoint;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class RTree {
+public class RTree<E extends DataPoint> {
 
     private static final int CHILDREN_COUNT = 3;
     private static final int BUCKET_SIZE = 32;
@@ -99,13 +100,13 @@ public class RTree {
         return children[idx];
     }
 
-    public DataPoint[] rangeSearch(IntervalDouble[] range) {
-        final DataPoint[] res = new DataPoint[entryCount];
+    public E[] rangeSearch(IntervalDouble[] range, E instance) {
+        final E[] res = (E[]) Array.newInstance(instance.getClass(), entryCount);
         final int len = rangeSearchImpl(range, res);
         return Arrays.copyOf(res, len);
     }
 
-    private int rangeSearchImpl(IntervalDouble[] range, DataPoint[] result) {
+    private int rangeSearchImpl(IntervalDouble[] range, E[] result) {
         RTree cursor = this;
         cursor.nextChild = 0;
         cursor.intersection = null;
@@ -124,7 +125,7 @@ public class RTree {
                             matches = range[j].contains(cursor.entries[i].location[j]);
                         }
                         if (matches) {
-                            result[resultIdx++] = cursor.entries[i];
+                            result[resultIdx++] = (E) cursor.entries[i];
                         }
                     }
                 }

@@ -7,7 +7,6 @@ package lxx.bullets.enemy;
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.PastBearingOffset;
-import lxx.data_analysis.DataPoint;
 import lxx.data_analysis.LxxDataPoint;
 import lxx.data_analysis.r_tree.RTree;
 import lxx.office.Office;
@@ -164,6 +163,8 @@ public class AdvancedEnemyGunModel {
 
     class Log {
 
+        private final LxxDataPoint<UndirectedGuessFactor> EXAMPLE = new LxxDataPoint<UndirectedGuessFactor>(null, null, null);
+
         private static final int BULLETS_PER_LOG = 5;
 
         private final Map<Attribute, Double> halfSideLength = LXXUtils.toMap(
@@ -183,7 +184,7 @@ public class AdvancedEnemyGunModel {
 
         private final HitRate enemyHitRate = new HitRate();
 
-        private RTree rTree;
+        private RTree<LxxDataPoint> rTree;
 
         private final Attribute[] attrs;
         private final LogType type;
@@ -194,7 +195,7 @@ public class AdvancedEnemyGunModel {
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
             this.type = type;
-            this.rTree = new RTree(attrs);
+            this.rTree = new RTree<LxxDataPoint>(attrs);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
@@ -202,7 +203,7 @@ public class AdvancedEnemyGunModel {
             final IntervalDouble[] range = getRange(predicate);
 
             TimeProfileProperties.TR_RANGE_SEARCH_TIME.start();
-            final DataPoint[] entries = rTree.rangeSearch(range);
+            final LxxDataPoint<UndirectedGuessFactor>[] entries = rTree.rangeSearch(range, EXAMPLE);
             office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_RANGE_SEARCH_TIME);
 
             final HeapSort heapSort;
@@ -233,7 +234,7 @@ public class AdvancedEnemyGunModel {
                     heapSort.sortLastN(sortedEntris);
                     office.getTimeProfiler().stopAndSaveProperty(TimeProfileProperties.TR_SORT_TIME);
                 }
-                final LxxDataPoint<UndirectedGuessFactor> entry = (LxxDataPoint<UndirectedGuessFactor>) entries[i];
+                final LxxDataPoint<UndirectedGuessFactor> entry = entries[i];
                 if (entry.payload.lateralDirection != 0 && lateralDirection != 0) {
 
                     final double bearingOffset = entry.payload.guessFactor * entry.payload.lateralDirection * lateralDirection * maxEscapeAngleQuick;
