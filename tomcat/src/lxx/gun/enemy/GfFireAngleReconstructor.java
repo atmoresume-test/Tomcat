@@ -18,11 +18,11 @@ public class GfFireAngleReconstructor implements FireAngleReconstructor<LxxDataP
 
     private final Map<TurnSnapshot, BearingOffsetDanger[]> cache = new HashMap<TurnSnapshot, BearingOffsetDanger[]>();
 
-    private final List<BulletShadow> bulletShadows;
+    private final Collection<BulletShadow> bulletShadows;
     private final double lateralDirection;
     private final double maxEscapeAngleQuick;
 
-    public GfFireAngleReconstructor(TurnSnapshot fireTimeTS, double bulletSpeed, List<BulletShadow> bulletShadows) {
+    public GfFireAngleReconstructor(TurnSnapshot fireTimeTS, double bulletSpeed, Collection<BulletShadow> bulletShadows) {
         this.bulletShadows = bulletShadows;
         lateralDirection = LXXUtils.lateralDirection(fireTimeTS.getEnemyImage(), fireTimeTS.getMeImage());
         maxEscapeAngleQuick = LXXUtils.getMaxEscapeAngle(bulletSpeed);

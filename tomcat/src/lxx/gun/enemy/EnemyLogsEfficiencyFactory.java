@@ -8,6 +8,10 @@ import lxx.gun.LogEfficienciesFactory;
 import lxx.gun.LogEfficiency;
 
 public class EnemyLogsEfficiencyFactory implements LogEfficienciesFactory {
+    public int getEfficienciesCount() {
+        return 4;
+    }
+
     public LogEfficiency[] createEfficiencies() {
         return new LogEfficiency[]{new EnemyHitRate(), new LogHitMissRate(9), new LogHitMissRate(45), new LogHitMissRate(5000)};
     }

@@ -15,4 +15,10 @@ public interface Log<E extends DataPoint> {
 
     Iterator<E> getRecordsIterator(TurnSnapshot query);
 
+    long getLastUpdateRoundTime();
+
+    boolean isEnabled();
+
+    void setEnabled(boolean enabled);
+
 }

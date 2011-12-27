@@ -7,7 +7,7 @@ package lxx.gun.my;
 import lxx.data_analysis.kd_tree.GunKdTreeEntry;
 import lxx.data_analysis.kd_tree.KdTreeAdapter;
 import lxx.gun.HeapSortingIterator;
-import lxx.gun.Log;
+import lxx.gun.LxxLog;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 
 import static java.lang.Math.sqrt;
 
-public class TomcatGunKdTreeLog implements Log<GunKdTreeEntry> {
+public class TomcatGunKdTreeLog extends LxxLog<GunKdTreeEntry> {
 
     private static final DistTimeComparator comparator = new DistTimeComparator();
 
@@ -31,6 +31,7 @@ public class TomcatGunKdTreeLog implements Log<GunKdTreeEntry> {
     }
 
     public void addEntry(GunKdTreeEntry dataPoint) {
+        super.addEntry(dataPoint);
         kdTree.addEntry(dataPoint);
     }
 

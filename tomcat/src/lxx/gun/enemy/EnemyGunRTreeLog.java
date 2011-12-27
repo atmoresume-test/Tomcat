@@ -8,7 +8,7 @@ import lxx.bullets.enemy.UndirectedGuessFactor;
 import lxx.data_analysis.LxxDataPoint;
 import lxx.data_analysis.r_tree.RTree;
 import lxx.gun.HeapSortingIterator;
-import lxx.gun.Log;
+import lxx.gun.LxxLog;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static java.lang.Math.round;
 
-public class EnemyGunRTreeLog implements Log<LxxDataPoint<UndirectedGuessFactor>> {
+public class EnemyGunRTreeLog extends LxxLog<LxxDataPoint<UndirectedGuessFactor>> {
 
     private static final LxxDataPoint<UndirectedGuessFactor> EXAMPLE = new LxxDataPoint<UndirectedGuessFactor>(null, null, null);
     private static final EnemyGunRTreeLog.RoundTimeDescComparator comparator = new RoundTimeDescComparator();
@@ -39,8 +39,8 @@ public class EnemyGunRTreeLog implements Log<LxxDataPoint<UndirectedGuessFactor>
     }
 
     public void addEntry(LxxDataPoint<UndirectedGuessFactor> dataPoint) {
+        super.addEntry(dataPoint);
         rTree.insert(dataPoint);
-        lastUpdateRoundTime = dataPoint.ts.roundTime;
     }
 
     public Iterator<LxxDataPoint<UndirectedGuessFactor>> getRecordsIterator(TurnSnapshot query) {
@@ -58,10 +58,6 @@ public class EnemyGunRTreeLog implements Log<LxxDataPoint<UndirectedGuessFactor>
         }
 
         return res;
-    }
-
-    public long getLastUpdateRoundTime() {
-        return lastUpdateRoundTime;
     }
 
     private static final class RoundTimeDescComparator implements Comparator<LxxDataPoint<UndirectedGuessFactor>> {

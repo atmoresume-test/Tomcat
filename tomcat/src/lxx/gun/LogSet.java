@@ -8,22 +8,23 @@ import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.BulletShadow;
+import lxx.data_analysis.DataPoint;
 import lxx.ts_log.TurnSnapshot;
 import lxx.utils.LXXUtils;
 
 import java.util.*;
 
-public abstract class LogSet {
+public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
 
     protected final Map<Log, LogEfficiency[]> logEfficiencies = new HashMap<Log, LogEfficiency[]>();
 
-    protected final List<Log> allLogs;
+    protected final List<L> allLogs;
 
-    private final List<Log>[] bestLogs;
+    private final List<Log<E>>[] bestLogs;
     private final int logsEfficienciesCount;
     private final int bestLogsPerCategoty;
 
-    public LogSet(List<Log> allLogs, LogEfficienciesFactory logEfficienciesFactory, int bestLogsPerCategoty) {
+    public LogSet(List<L> allLogs, LogEfficienciesFactory logEfficienciesFactory, int bestLogsPerCategoty) {
         this.allLogs = allLogs;
         this.bestLogsPerCategoty = bestLogsPerCategoty;
 
@@ -34,18 +35,19 @@ public abstract class LogSet {
         logsEfficienciesCount = logEfficienciesFactory.getEfficienciesCount();
         bestLogs = new List[logsEfficienciesCount];
         for (int i = 0; i < logsEfficienciesCount; i++) {
-            bestLogs[i] = new ArrayList<Log>(allLogs);
+            bestLogs[i] = new ArrayList<Log<E>>(allLogs);
         }
     }
 
     public void updateLogEfficiencies(LXXBullet bullet) {
+        TurnSnapshot query = bullet.getAimPredictionData().getTs();
         for (Log log : logEfficiencies.keySet()) {
             final LogEfficiency[] les = logEfficiencies.get(log);
             final PD pd = (PD) bullet.getAimPredictionData();
             for (LogEfficiency le : les) {
                 LogPrediction logPrediction = pd.getLogPrediction(log);
                 if (logPrediction == null) {
-                    logPrediction = getLogPrediction(log.getRecordsIterator(bullet.getAimPredictionData().getTs()), bullet.getSpeed(), bullet.getBulletShadows());
+                    logPrediction = getLogPrediction(query, log.getRecordsIterator(query), bullet.getSpeed(), bullet.getBulletShadows());
                 }
                 le.update(bullet, logPrediction);
             }
@@ -59,8 +61,8 @@ public abstract class LogSet {
 
         final Map<Log, LogPrediction> logPredictions = new HashMap<Log, LogPrediction>();
         final long roundTime = LXXUtils.getRoundTime(t.getTime(), t.getRound());
-        for (Log log : getBestLogs()) {
-            final LogPrediction logPrediction = getLogPrediction(log.getRecordsIterator(currentTS), bulletSpeed, bulletShadows);
+        for (Log<E> log : getBestLogs()) {
+            final LogPrediction logPrediction = getLogPrediction(currentTS, log.getRecordsIterator(currentTS), bulletSpeed, bulletShadows);
             logPredictions.put(log, logPrediction);
             for (BearingOffsetDanger bod : logPrediction.getBearingOffsets()) {
                 bearingOffsets.add(bod);
@@ -80,9 +82,16 @@ public abstract class LogSet {
         for (int i = 0; i < logsEfficienciesCount; i++) {
             final int idx = i;
             Collections.sort(bestLogs[i], new Comparator<Log>() {
+
                 public int compare(Log o1, Log o2) {
+                    if (o1.isEnabled() && !o2.isEnabled()) {
+                        return 1;
+                    } else if (!o1.isEnabled() && o2.isEnabled()) {
+                        return -1;
+                    }
                     return logEfficiencies.get(o1)[idx].compareTo(logEfficiencies.get(o2)[idx]);
                 }
+
             });
         }
     }
@@ -99,8 +108,6 @@ public abstract class LogSet {
         return bestLogs;
     }
 
-    protected abstract LogPrediction getLogPrediction(Iterator recordsIterator, double bulletSpeed, Collection<BulletShadow> bulletShadows);
-
-    protected abstract FireAngleReconstructor getFireAngleReconstructor(TurnSnapshot query);
+    protected abstract LogPrediction getLogPrediction(TurnSnapshot query, Iterator<E> recordsIterator, double bulletSpeed, Collection<BulletShadow> bulletShadows);
 
 }
