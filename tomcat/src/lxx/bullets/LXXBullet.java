@@ -7,6 +7,7 @@ package lxx.bullets;
 import lxx.LXXRobot;
 import lxx.LXXRobotState;
 import lxx.bullets.enemy.BulletShadow;
+import lxx.lms.PD;
 import lxx.utils.*;
 import lxx.utils.wave.Wave;
 import robocode.Bullet;
@@ -25,6 +26,7 @@ public class LXXBullet {
     private Bullet bullet;
     private LXXBulletState state;
     private AimingPredictionData aimPredictionData;
+    private PD pd;
     private final Map<LXXBullet, BulletShadow> bulletShadows = new HashMap<LXXBullet, BulletShadow>();
     private final List<IntervalDouble> mergedShadows = new ArrayList<IntervalDouble>();
     private LXXPoint firePosition;
@@ -64,6 +66,14 @@ public class LXXBullet {
 
     public void setAimPredictionData(AimingPredictionData aimPredictionData) {
         this.aimPredictionData = aimPredictionData;
+    }
+
+    public PD getPD() {
+        return pd;
+    }
+
+    public void setPd(PD pd) {
+        this.pd = pd;
     }
 
     public LXXRobot getOwner() {

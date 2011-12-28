@@ -2,12 +2,12 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun.my;
+package lxx.lms.my;
 
 import lxx.data_analysis.kd_tree.GunKdTreeEntry;
 import lxx.data_analysis.kd_tree.KdTreeAdapter;
-import lxx.gun.HeapSortingIterator;
-import lxx.gun.LxxLog;
+import lxx.lms.HeapSortingIterator;
+import lxx.lms.LxxLog;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
@@ -26,6 +26,7 @@ public class TomcatGunKdTreeLog extends LxxLog<GunKdTreeEntry> {
     private final double[] weights;
 
     public TomcatGunKdTreeLog(Attribute[] attributes, double[] weights) {
+        super(attributes);
         this.weights = weights;
         kdTree = new KdTreeAdapter<GunKdTreeEntry>(attributes, 50000);
     }

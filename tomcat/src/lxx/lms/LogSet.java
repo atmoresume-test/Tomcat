@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun;
+package lxx.lms;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
@@ -96,12 +96,12 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
         }
     }
 
-    protected List<Log> getBestLogs() {
-        final List<Log> bestLogs = new ArrayList<Log>();
+    protected List<L> getBestLogs() {
+        final List<L> bestLogs = new ArrayList<L>();
 
         for (int i = 0; i < logsEfficienciesCount; i++) {
             for (int j = 0; j < bestLogsPerCategoty; j++) {
-                bestLogs.add(this.bestLogs[i].get(j));
+                bestLogs.add((L) this.bestLogs[i].get(j));
             }
         }
 

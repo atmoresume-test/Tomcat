@@ -2,10 +2,10 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun.enemy;
+package lxx.lms.enemy;
 
-import lxx.gun.LogEfficienciesFactory;
-import lxx.gun.LogEfficiency;
+import lxx.lms.LogEfficienciesFactory;
+import lxx.lms.LogEfficiency;
 
 public class EnemyLogsEfficiencyFactory implements LogEfficienciesFactory {
     public int getEfficienciesCount() {

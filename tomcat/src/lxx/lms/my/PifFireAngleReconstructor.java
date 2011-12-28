@@ -2,11 +2,11 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun.my;
+package lxx.lms.my;
 
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.data_analysis.LxxDataPoint;
-import lxx.gun.FireAngleReconstructor;
+import lxx.lms.FireAngleReconstructor;
 import lxx.targeting.Target;
 import lxx.ts_log.TurnSnapshot;
 import lxx.utils.*;

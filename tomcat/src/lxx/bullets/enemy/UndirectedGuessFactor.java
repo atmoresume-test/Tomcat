@@ -11,7 +11,7 @@ public class UndirectedGuessFactor implements Serializable {
     public final double guessFactor;
     public final double lateralDirection;
 
-    UndirectedGuessFactor(double guessFactor, double lateralDirection) {
+    public UndirectedGuessFactor(double guessFactor, double lateralDirection) {
         this.guessFactor = guessFactor;
         this.lateralDirection = lateralDirection;
     }

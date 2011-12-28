@@ -2,13 +2,13 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun.enemy;
+package lxx.lms.enemy;
 
 import lxx.bullets.enemy.UndirectedGuessFactor;
 import lxx.data_analysis.LxxDataPoint;
 import lxx.data_analysis.r_tree.RTree;
-import lxx.gun.HeapSortingIterator;
-import lxx.gun.LxxLog;
+import lxx.lms.HeapSortingIterator;
+import lxx.lms.LxxLog;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
 import lxx.utils.IntervalDouble;
@@ -25,16 +25,14 @@ public class EnemyGunRTreeLog extends LxxLog<LxxDataPoint<UndirectedGuessFactor>
     private static final LxxDataPoint<UndirectedGuessFactor> EXAMPLE = new LxxDataPoint<UndirectedGuessFactor>(null, null, null);
     private static final EnemyGunRTreeLog.RoundTimeDescComparator comparator = new RoundTimeDescComparator();
 
-    private final Attribute[] attrs;
     private final RTree<LxxDataPoint<UndirectedGuessFactor>> rTree;
     private final Map<Attribute, Double> halfSideLength;
+    private final LogType logType;
 
-    private long lastUpdateRoundTime;
-
-    public EnemyGunRTreeLog(Map<Attribute, Double> halfSideLength) {
+    public EnemyGunRTreeLog(Map<Attribute, Double> halfSideLength, LogType logType, Attribute... attrs) {
+        super(attrs);
         this.halfSideLength = halfSideLength;
-        attrs = new Attribute[halfSideLength.size()];
-        halfSideLength.keySet().toArray(attrs);
+        this.logType = logType;
         rTree = new RTree<LxxDataPoint<UndirectedGuessFactor>>(attrs);
     }
 
@@ -49,9 +47,9 @@ public class EnemyGunRTreeLog extends LxxLog<LxxDataPoint<UndirectedGuessFactor>
     }
 
     private IntervalDouble[] getRange(TurnSnapshot center) {
-        final IntervalDouble[] res = new IntervalDouble[attrs.length];
+        final IntervalDouble[] res = new IntervalDouble[attributes.length];
         int idx = 0;
-        for (Attribute attr : attrs) {
+        for (Attribute attr : attributes) {
             double delta = halfSideLength.get(attr);
             res[idx++] = new IntervalDouble((int) round(LXXUtils.limit(attr, center.getAttrValue(attr) - delta)),
                     (int) round(LXXUtils.limit(attr, center.getAttrValue(attr) + delta)));
@@ -60,11 +58,20 @@ public class EnemyGunRTreeLog extends LxxLog<LxxDataPoint<UndirectedGuessFactor>
         return res;
     }
 
+    public LogType getLogType() {
+        return logType;
+    }
+
     private static final class RoundTimeDescComparator implements Comparator<LxxDataPoint<UndirectedGuessFactor>> {
 
         public int compare(LxxDataPoint<UndirectedGuessFactor> o1, LxxDataPoint<UndirectedGuessFactor> o2) {
             return o1.ts.roundTime > o2.ts.roundTime ? -1 : 1;
         }
+    }
+
+    public enum LogType {
+        HIT_LOG,
+        VISIT_LOG
     }
 
 }

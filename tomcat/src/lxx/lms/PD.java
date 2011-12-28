@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun;
+package lxx.lms;
 
 import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;

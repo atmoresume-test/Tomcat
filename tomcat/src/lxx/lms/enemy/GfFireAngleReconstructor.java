@@ -2,13 +2,13 @@
  * Copyright (c) 2011 Alexey Zhidkov (Jdev). All Rights Reserved.
  */
 
-package lxx.gun.enemy;
+package lxx.lms.enemy;
 
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.BulletShadow;
 import lxx.bullets.enemy.UndirectedGuessFactor;
 import lxx.data_analysis.LxxDataPoint;
-import lxx.gun.FireAngleReconstructor;
+import lxx.lms.FireAngleReconstructor;
 import lxx.ts_log.TurnSnapshot;
 import lxx.utils.LXXUtils;
 

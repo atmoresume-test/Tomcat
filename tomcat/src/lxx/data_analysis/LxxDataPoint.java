@@ -22,7 +22,7 @@ public class LxxDataPoint<T> extends DataPoint {
         this(location, ts, null);
     }
 
-    public static <T> LxxDataPoint createPlainPoint(TurnSnapshot ts, T payload, Attribute... attrs) {
+    public static <T> LxxDataPoint<T> createPlainPoint(TurnSnapshot ts, T payload, Attribute... attrs) {
         return new LxxDataPoint<T>(LocationFactory.getPlainLocation(ts, attrs), ts, payload);
     }
 
