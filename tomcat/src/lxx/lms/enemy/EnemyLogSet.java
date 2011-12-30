@@ -6,15 +6,11 @@ package lxx.lms.enemy;
 
 import lxx.LXXRobot;
 import lxx.bullets.LXXBullet;
-import lxx.bullets.LXXBulletState;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.BulletShadow;
 import lxx.bullets.enemy.UndirectedGuessFactor;
 import lxx.data_analysis.LxxDataPoint;
-import lxx.lms.Log;
-import lxx.lms.LogPrediction;
-import lxx.lms.LogSet;
-import lxx.lms.PD;
+import lxx.lms.*;
 import lxx.office.Office;
 import lxx.ts_log.TurnSnapshot;
 import lxx.ts_log.attributes.Attribute;
@@ -59,11 +55,6 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
     }
 
     public void processBullet(LXXBullet bullet) {
-        updateLogEfficiencies(bullet);
-        if (bullet.getState() == LXXBulletState.MISSED) {
-            return;
-        }
-
         updateLogs(bullet, EnemyGunRTreeLog.LogType.HIT_LOG);
     }
 
@@ -72,6 +63,7 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
     }
 
     private void updateLogs(LXXBullet bullet, EnemyGunRTreeLog.LogType logType) {
+        updateLogEfficiencies(bullet);
         final double direction = bullet.getTargetLateralDirection();
         final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         final boolean isVisitLogsEnabled = office.getStatisticsManager().getEnemyHitRate().getHitCount() >= 4;
@@ -82,7 +74,7 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
                 log.addEntry(LxxDataPoint.createPlainPoint(bullet.getAimPredictionData().getTs(), payload, log.getAttributes()));
             }
 
-            if (logType == EnemyGunRTreeLog.LogType.VISIT_LOG) {
+            if (log.getLogType() == EnemyGunRTreeLog.LogType.VISIT_LOG) {
                 log.setEnabled(isVisitLogsEnabled);
             }
         }
@@ -118,14 +110,13 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
         final List<BearingOffsetDanger> bearingOffsets = new ArrayList<BearingOffsetDanger>();
         for (EnemyGunRTreeLog log : getBestLogs()) {
             LogPrediction logPrediction = aimPredictionData.getLogPrediction(log);
-            List<BearingOffsetDanger> logBearingOffsets = null;
             if (logPrediction == null) {
                 logPrediction = getLogPrediction(aimPredictionData.getTs(), log.getRecordsIterator(aimPredictionData.getTs()), bullet.getBullet().getPower(), bullet.getBulletShadows());
-                logBearingOffsets = logPrediction.getBearingOffsets();
+                logPrediction.getBearingOffsets();
                 aimPredictionData.addLogPrediction(log, logPrediction);
             }
             logPrediction.used = true;
-            bearingOffsets.addAll(logBearingOffsets);
+            bearingOffsets.addAll(logPrediction.getBearingOffsets());
         }
 
         if (bearingOffsets.size() != 0) {
@@ -151,38 +142,27 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
         return false;
     }
 
-    protected LogPrediction getLogPrediction(TurnSnapshot query, Iterator<LxxDataPoint<UndirectedGuessFactor>> recordsIterator, double bulletSpeed, Collection<BulletShadow> bulletShadows) {
+    protected int getSuccessfulRecordsCount() {
+        return BULLETS_PER_LOG;
+    }
+
+    protected FireAngleReconstructor<LxxDataPoint<UndirectedGuessFactor>> getFireAngleReconstructor(TurnSnapshot query, double bulletSpeed, Collection<BulletShadow> bulletShadows) {
         GfFireAngleReconstructor far = fireAngleReconstructors.get(query);
 
         if (far == null) {
-            far = new GfFireAngleReconstructor(query, bulletSpeed, bulletShadows);
-
+            far = new GfFireAngleReconstructor(query, bulletSpeed);
             fireAngleReconstructors.put(query, far);
         }
+        far.setBulletShadows(bulletShadows);
 
-        final ArrayList<BearingOffsetDanger> bearingOffsets = new ArrayList<BearingOffsetDanger>();
-
-        int boCnt = 0;
-        while (recordsIterator.hasNext()) {
-            if (boCnt == BULLETS_PER_LOG) {
-                break;
-            }
-
-            final BearingOffsetDanger[] bos = far.getBearingOffsets(recordsIterator.next());
-            if (bos.length > 0) {
-                boCnt++;
-            }
-            bearingOffsets.addAll(Arrays.asList(bos));
-        }
-
-        return new LogPrediction(bearingOffsets);
+        return far;
     }
 
     private static List<EnemyGunRTreeLog> createLogSet() {
         final List<EnemyGunRTreeLog> res = new ArrayList<EnemyGunRTreeLog>();
 
-        List<EnemyGunRTreeLog> hitLogs = createLogs(hitLogsPossibleAttributes, EnemyGunRTreeLog.LogType.HIT_LOG, AttributesManager.myLateralSpeed);
-        List<EnemyGunRTreeLog> visitLogs = createLogs(visitLogsPossibleAttributes, EnemyGunRTreeLog.LogType.VISIT_LOG);
+        final List<EnemyGunRTreeLog> hitLogs = createLogs(hitLogsPossibleAttributes, EnemyGunRTreeLog.LogType.HIT_LOG, AttributesManager.myLateralSpeed);
+        final List<EnemyGunRTreeLog> visitLogs = createLogs(visitLogsPossibleAttributes, EnemyGunRTreeLog.LogType.VISIT_LOG);
 
         for (Log l : hitLogs) {
             l.setEnabled(true);
@@ -216,7 +196,7 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
             for (Attribute attr : attrs) {
                 logRangeSizes.put(attr, halfSideLength.get(attr));
             }
-            logs.add(new EnemyGunRTreeLog(logRangeSizes, logType));
+            logs.add(new EnemyGunRTreeLog(logRangeSizes, logType, attrs.toArray(new Attribute[attrs.size()])));
         }
         return logs;
     }

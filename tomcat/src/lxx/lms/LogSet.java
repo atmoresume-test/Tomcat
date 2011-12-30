@@ -16,11 +16,11 @@ import java.util.*;
 
 public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
 
-    protected final Map<Log, LogEfficiency[]> logEfficiencies = new HashMap<Log, LogEfficiency[]>();
+    protected final Map<L, LogEfficiency[]> logEfficiencies = new HashMap<L, LogEfficiency[]>();
 
     protected final List<L> allLogs;
 
-    private final List<Log<E>>[] bestLogs;
+    private final List<L>[] bestLogs;
     private final int logsEfficienciesCount;
     private final int bestLogsPerCategoty;
 
@@ -28,30 +28,34 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
         this.allLogs = allLogs;
         this.bestLogsPerCategoty = bestLogsPerCategoty;
 
-        for (Log log : allLogs) {
+        for (L log : allLogs) {
             logEfficiencies.put(log, logEfficienciesFactory.createEfficiencies());
         }
 
         logsEfficienciesCount = logEfficienciesFactory.getEfficienciesCount();
         bestLogs = new List[logsEfficienciesCount];
         for (int i = 0; i < logsEfficienciesCount; i++) {
-            bestLogs[i] = new ArrayList<Log<E>>(allLogs);
+            bestLogs[i] = new ArrayList<L>(allLogs);
         }
     }
 
     public void updateLogEfficiencies(LXXBullet bullet) {
         TurnSnapshot query = bullet.getAimPredictionData().getTs();
-        for (Log log : logEfficiencies.keySet()) {
+        System.out.println("------------------------------------------");
+        for (L log : logEfficiencies.keySet()) {
             final LogEfficiency[] les = logEfficiencies.get(log);
-            final PD pd = (PD) bullet.getAimPredictionData();
+            final PD pd = bullet.getPD();
+            LogPrediction logPrediction = pd.getLogPrediction(log);
+            if (logPrediction == null) {
+                logPrediction = getLogPrediction(query, log.getRecordsIterator(query), bullet.getSpeed(), bullet.getBulletShadows());
+            }
+            System.out.println("Calculate log efficiency new: " + Arrays.toString(log.getAttributes()));
+            logPrediction.calculateEfficiency(bullet);
             for (LogEfficiency le : les) {
-                LogPrediction logPrediction = pd.getLogPrediction(log);
-                if (logPrediction == null) {
-                    logPrediction = getLogPrediction(query, log.getRecordsIterator(query), bullet.getSpeed(), bullet.getBulletShadows());
-                }
                 le.update(bullet, logPrediction);
             }
         }
+        System.out.println("------------------------------------------");
 
         updateBestLogs();
     }
@@ -85,9 +89,9 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
 
                 public int compare(Log o1, Log o2) {
                     if (o1.isEnabled() && !o2.isEnabled()) {
-                        return 1;
-                    } else if (!o1.isEnabled() && o2.isEnabled()) {
                         return -1;
+                    } else if (!o1.isEnabled() && o2.isEnabled()) {
+                        return 1;
                     }
                     return logEfficiencies.get(o1)[idx].compareTo(logEfficiencies.get(o2)[idx]);
                 }
@@ -96,8 +100,8 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
         }
     }
 
-    protected List<L> getBestLogs() {
-        final List<L> bestLogs = new ArrayList<L>();
+    protected Set<L> getBestLogs() {
+        final Set<L> bestLogs = new HashSet<L>();
 
         for (int i = 0; i < logsEfficienciesCount; i++) {
             for (int j = 0; j < bestLogsPerCategoty; j++) {
@@ -108,6 +112,29 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
         return bestLogs;
     }
 
-    protected abstract LogPrediction getLogPrediction(TurnSnapshot query, Iterator<E> recordsIterator, double bulletSpeed, Collection<BulletShadow> bulletShadows);
+    protected LogPrediction getLogPrediction(TurnSnapshot query, Iterator<E> recordsIterator, double bulletSpeed, Collection<BulletShadow> bulletShadows) {
+        FireAngleReconstructor<E> far = getFireAngleReconstructor(query, bulletSpeed, bulletShadows);
+
+        final ArrayList<BearingOffsetDanger> bearingOffsets = new ArrayList<BearingOffsetDanger>();
+
+        int boCnt = 0;
+        while (recordsIterator.hasNext()) {
+            if (boCnt == getSuccessfulRecordsCount()) {
+                break;
+            }
+
+            final BearingOffsetDanger[] bos = far.getBearingOffsets(recordsIterator.next());
+            if (bos.length > 0) {
+                boCnt++;
+            }
+            bearingOffsets.addAll(Arrays.asList(bos));
+        }
+
+        return new LogPrediction(bearingOffsets);
+    }
+
+    protected abstract int getSuccessfulRecordsCount();
+
+    protected abstract FireAngleReconstructor<E> getFireAngleReconstructor(TurnSnapshot query, double bulletSpeed, Collection<BulletShadow> bulletShadows);
 
 }

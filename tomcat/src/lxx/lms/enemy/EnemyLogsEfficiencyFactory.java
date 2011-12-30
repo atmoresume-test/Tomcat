@@ -8,11 +8,13 @@ import lxx.lms.LogEfficienciesFactory;
 import lxx.lms.LogEfficiency;
 
 public class EnemyLogsEfficiencyFactory implements LogEfficienciesFactory {
+
     public int getEfficienciesCount() {
-        return 4;
+        return 3;
     }
 
     public LogEfficiency[] createEfficiencies() {
-        return new LogEfficiency[]{new EnemyHitRate(), new LogHitMissRate(9), new LogHitMissRate(45), new LogHitMissRate(5000)};
+        return new LogEfficiency[]{new LogHitMissRate(9), new LogHitMissRate(45), new LogHitMissRate(5000)};
     }
+
 }

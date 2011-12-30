@@ -17,20 +17,19 @@ public class EnemyHitRate implements LogEfficiency<EnemyHitRate> {
     private final HitRate hitRate = new HitRate();
 
     public void update(LXXBullet bullet, LogPrediction prediction) {
-        if (prediction.used) {
-            if (bullet.getState() == LXXBulletState.HITTED) {
-                hitRate.hit();
-            } else if (bullet.getState() == LXXBulletState.MISSED) {
-                hitRate.miss();
-            }
+        // todo(zhidkov): if (prediction.used)
+        if (bullet.getState() == LXXBulletState.HITTED) {
+            hitRate.hit();
+        } else if (bullet.getState() == LXXBulletState.MISSED) {
+            hitRate.miss();
         }
     }
 
     public int compareTo(EnemyHitRate o) {
         if (hitRate.getFireCount() == 0) {
-            return -1;
-        } else if (o.hitRate.getFireCount() == 0) {
             return 1;
+        } else if (o.hitRate.getFireCount() == 0) {
+            return -1;
         }
         return (int) signum(hitRate.getHitRate() - o.hitRate.getHitRate());
     }

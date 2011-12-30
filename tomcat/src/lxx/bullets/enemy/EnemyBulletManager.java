@@ -16,6 +16,7 @@ import lxx.events.FireEvent;
 import lxx.events.LXXKeyEvent;
 import lxx.events.LXXPaintEvent;
 import lxx.events.TickEvent;
+import lxx.lms.enemy.EnemyLogSet;
 import lxx.office.Office;
 import lxx.office.PropertiesManager;
 import lxx.paint.LXXGraphics;
@@ -47,6 +48,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
+    private static EnemyLogSet enemyLogSet;
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -62,6 +64,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
 
     public EnemyBulletManager(Office office, Tomcat robot) {
         enemyGunModel = new AdvancedEnemyGunModel(office);
+        if (enemyLogSet == null) {
+            enemyLogSet = new EnemyLogSet(office);
+        }
         this.waveManager = office.getWaveManager();
         this.robot = robot;
         this.bulletManager = office.getBulletManager();
@@ -90,8 +95,23 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
             addBulletShadows(lxxBullet, bulletShadows);
             lxxBullet.setAimPredictionData(enemyGunModel.getPredictionData(target, turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY),
                     bulletShadows.values()));
+            lxxBullet.setPd(enemyLogSet.getPredictionData(turnSnapshotsLog.getLastSnapshot(target, AdvancedEnemyGunModel.FIRE_DETECTION_LATENCY), bulletSpeed, target, bulletShadows.values()));
 
             predictedBullets.put(wave, lxxBullet);
+
+            List<BearingOffsetDanger> nl = lxxBullet.getPD().getPredictedBearingOffsets();
+            if (nl.size() > 0) {
+                List<PastBearingOffset> ol = ((EnemyBulletPredictionData) lxxBullet.getAimPredictionData()).getPredictedBearingOffsets();
+                if (nl.size() != ol.size()) {
+                    System.out.println("aaaaaaaaaaaaaaa");
+                } else {
+                    for (int i = 0; i < nl.size(); i++) {
+                        if (nl.get(i).bearingOffset != ol.get(i).bearingOffset) {
+                            System.out.println("AAAAAAAAAAAAAAAAAAAAAA");
+                        }
+                    }
+                }
+            }
 
             for (BulletManagerListener listener : listeners) {
                 listener.bulletFired(lxxBullet);
@@ -117,8 +137,9 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
         predictedBullets.remove(w);
         enemyGunModel.processMiss(lxxBullet);
-        updateBulletsOnAir();
         enemyGunModel.processVisit(lxxBullet);
+        enemyLogSet.processVisit(lxxBullet);
+        updateBulletsOnAir();
         timeProfiler.stopAndSaveProperty(TimeProfileProperties.EBM_WAVE_TIME);
     }
 
@@ -126,6 +147,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         for (LXXBullet bullet : predictedBullets.values()) {
             if (bullet.getState() == LXXBulletState.ON_AIR) {
                 enemyGunModel.updateBulletPredictionData(bullet);
+                enemyLogSet.updateBulletPredictionData(bullet);
             }
         }
     }
@@ -155,6 +177,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
 
         enemyGunModel.processIntercept(lxxBullet);
+        enemyLogSet.processBullet(lxxBullet);
         updateBulletsOnAir();
     }
 
@@ -174,6 +197,7 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
         }
 
         enemyGunModel.processHit(lxxBullet);
+        enemyLogSet.processBullet(lxxBullet);
         updateBulletsOnAir();
     }
 

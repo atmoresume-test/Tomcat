@@ -52,7 +52,7 @@ public class AdvancedEnemyGunModel {
             logSet.shortLogs.addAll(logSet.visitLogsSet);
             logSet.midLogs.addAll(logSet.visitLogsSet);
             logSet.longLogs.addAll(logSet.visitLogsSet);
-            logSet.enemyHitRateLogs.addAll(logSet.visitLogsSet);
+            //logSet.enemyHitRateLogs.addAll(logSet.visitLogsSet);
         }
     }
 
@@ -304,8 +304,8 @@ public class AdvancedEnemyGunModel {
         private final List<Log> shortLogs = new ArrayList<Log>();
         private final List<Log> midLogs = new ArrayList<Log>();
         private final List<Log> longLogs = new ArrayList<Log>();
-        private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
-        private final List[] bestLogs = {shortLogs, midLogs, longLogs, enemyHitRateLogs};
+        //private final List<Log> enemyHitRateLogs = new ArrayList<Log>();
+        private final List[] bestLogs = {shortLogs, midLogs, longLogs/*, enemyHitRateLogs*/};
 
         public void learn(TurnSnapshot location, UndirectedGuessFactor payload) {
             for (Log log : visitLogsSet) {
@@ -352,7 +352,7 @@ public class AdvancedEnemyGunModel {
                             (o1.longAvgHitRate.getCurrentValue() - o1.longAvgMissRate.getCurrentValue()));
                 }
             });
-            Collections.sort(enemyHitRateLogs, new Comparator<Log>() {
+            /*Collections.sort(enemyHitRateLogs, new Comparator<Log>() {
                 public int compare(Log o1, Log o2) {
                     if (o1.enemyHitRate.getFireCount() == 0) {
                         return 1;
@@ -361,7 +361,7 @@ public class AdvancedEnemyGunModel {
                     }
                     return (int) signum(o1.enemyHitRate.getHitRate() - o2.enemyHitRate.getHitRate());
                 }
-            });
+            });*/
         }
 
         private Set<Log> getBestLogs() {
@@ -392,8 +392,10 @@ public class AdvancedEnemyGunModel {
         }
 
         public void learn(LXXBullet bullet, boolean isHit) {
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++");
             recalculateLogSetEfficiency(bullet, visitLogsSet, isHit);
             recalculateLogSetEfficiency(bullet, hitLogsSet, isHit);
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++");
             updateBestLogs();
             if (isHit) {
                 final double direction = bullet.getTargetLateralDirection();
@@ -412,6 +414,7 @@ public class AdvancedEnemyGunModel {
                 if (bearingOffsets == null) {
                     bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
                 }
+                System.out.println("Calculate log efficiency old: " + Arrays.toString(log.attrs));
                 double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
@@ -436,19 +439,26 @@ public class AdvancedEnemyGunModel {
                 effectiveInterval = new IntervalDouble(hitInterval.center() - hitInterval.getLength() * 0.4,
                         hitInterval.center() + hitInterval.getLength() * 0.4);
             }
+            System.out.println("Ival: " + effectiveInterval);
 
             double totalDanger = 0;
             double realDanger = 0;
             for (PastBearingOffset pastBo : bearingOffsets) {
+                System.out.println("Bo: " + pastBo.bearingOffset);
                 totalDanger += pastBo.danger;
                 if (effectiveInterval.contains(pastBo.bearingOffset)) {
                     realDanger += pastBo.danger;
                 }
             }
+            System.out.println("Total bos: " + totalDanger);
 
             if (totalDanger == 0) {
+                System.out.println("Efficiency: 0");
                 return 0;
             }
+
+            System.out.println("Efficiency: " + (realDanger / totalDanger));
+            System.out.println("================================================");
 
             return realDanger / totalDanger;
         }
@@ -464,7 +474,7 @@ public class AdvancedEnemyGunModel {
         res.shortLogs.addAll(res.hitLogsSet);
         res.midLogs.addAll(res.hitLogsSet);
         res.longLogs.addAll(res.hitLogsSet);
-        res.enemyHitRateLogs.addAll(res.hitLogsSet);
+        //res.enemyHitRateLogs.addAll(res.hitLogsSet);
 
         res.updateBestLogs();
 

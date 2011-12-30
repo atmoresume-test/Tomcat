@@ -21,14 +21,16 @@ public class HeapSortingIterator<E extends DataPoint> implements Iterator<E> {
         this.array = array;
         this.cmp = cmp;
 
-        for (int i = array.length / 2; i >= 0; i--) {
-            downHeap(i, array.length);
+        if (array.length > 1) {
+            for (int i = array.length / 2; i >= 0; i--) {
+                downHeap(i, array.length);
+            }            
         }
         i = array.length - 1;
     }
 
     public boolean hasNext() {
-        return i >= -1;
+        return array.length > 0 && i >= 0;
     }
 
     public E next() {
