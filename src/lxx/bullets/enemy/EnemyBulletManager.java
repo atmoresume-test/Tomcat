@@ -49,7 +49,6 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     private static boolean paintEnabled = false;
     private static int ghostBulletsCount = 0;
     private static EnemyLogSet enemyLogSet;
-    private static final String FAKE = "FAKE";
 
     private final Map<Wave, LXXBullet> predictedBullets = new HashMap<Wave, LXXBullet>();
     private final List<BulletManagerListener> listeners = new LinkedList<BulletManagerListener>();
@@ -213,19 +212,15 @@ public class EnemyBulletManager implements WaveCallback, TargetManagerListener, 
     }
 
     private LXXBullet getLXXBullet(Wave wave) {
-        final LXXBullet lxxBullet = predictedBullets.get(wave);
-        if (lxxBullet == null) {
-            return null;
-        }
-
-        return lxxBullet;
+        final Bullet bullet = getFakeBullet(wave);
+        return getLXXBullet(wave, bullet);
     }
 
     private Bullet getFakeBullet(Wave wave) {
         final double bulletHeading = wave.getSourcePosAtFireTime().angleTo(wave.getTargetPosAtFireTime());
         final APoint bulletPos = wave.getSourceStateAtFireTime().project(bulletHeading, wave.getTraveledDistance());
         return new Bullet(bulletHeading, bulletPos.getX(), bulletPos.getY(), LXXUtils.getBulletPower(wave.getSpeed()),
-                FAKE, FAKE, true, -1);
+                wave.getSourceStateAtFireTime().getRobot().getName(), wave.getTargetStateAtLaunchTime().getRobot().getName(), true, -1);
     }
 
     private LXXBullet getLXXBullet(Wave wave, Bullet bullet) {

@@ -184,7 +184,7 @@ public class AdvancedEnemyGunModel {
 
         private final HitRate enemyHitRate = new HitRate();
 
-        private RTree<LxxDataPoint<UndirectedGuessFactor>> rTree;
+        private RTree<LxxDataPoint> rTree;
 
         private final Attribute[] attrs;
         private final LogType type;
@@ -195,7 +195,7 @@ public class AdvancedEnemyGunModel {
         private Log(Attribute[] attrs, LogType type) {
             this.attrs = attrs;
             this.type = type;
-            this.rTree = new RTree<LxxDataPoint<UndirectedGuessFactor>>(attrs);
+            this.rTree = new RTree<LxxDataPoint>(attrs);
         }
 
         private List<PastBearingOffset> getBearingOffsets(TurnSnapshot predicate, double firePower, Collection<BulletShadow> bulletShadows) {
@@ -414,9 +414,7 @@ public class AdvancedEnemyGunModel {
                 if (bearingOffsets == null) {
                     bearingOffsets = log.getBearingOffsets(ebpd.getTs(), bullet.getBullet().getPower(), bullet.getBulletShadows());
                 }
-                System.out.println("Calculate log efficiency old: " + Arrays.toString(log.attrs) + "; " + log.type);
-                System.out.println("Fire time: " + bullet.getWave().getLaunchTime());
-                System.out.println("State: " + bullet.getState());
+                System.out.println("Calculate log efficiency old: " + Arrays.toString(log.attrs));
                 double logEfficiency = calculateEfficiency(bullet, bearingOffsets, isHit);
                 if (isHit) {
                     log.shortAvgHitRate.addValue(logEfficiency);
@@ -435,11 +433,9 @@ public class AdvancedEnemyGunModel {
             if (isHit) {
                 final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
                 final double currentBO = bullet.getRealBearingOffsetRadians();
-                System.out.println("1 - " + bullet + ": " + currentBO);
                 effectiveInterval = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
             } else {
                 final IntervalDouble hitInterval = bullet.getWave().getHitBearingOffsetInterval();
-                System.out.println("2 - " + bullet + ": " + hitInterval.center());
                 effectiveInterval = new IntervalDouble(hitInterval.center() - hitInterval.getLength() * 0.4,
                         hitInterval.center() + hitInterval.getLength() * 0.4);
             }

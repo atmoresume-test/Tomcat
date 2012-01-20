@@ -9,7 +9,6 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.bullets.enemy.BulletShadow;
 import lxx.data_analysis.DataPoint;
-import lxx.lms.enemy.EnemyGunRTreeLog;
 import lxx.ts_log.TurnSnapshot;
 import lxx.utils.LXXUtils;
 
@@ -40,20 +39,18 @@ public abstract class LogSet<L extends Log<E>, E extends DataPoint> {
         }
     }
 
-    public void updateLogEfficiencies(LXXBullet bullet, boolean isHit) {
+    public void updateLogEfficiencies(LXXBullet bullet) {
         TurnSnapshot query = bullet.getAimPredictionData().getTs();
         System.out.println("------------------------------------------");
-        for (L log : allLogs) {
+        for (L log : logEfficiencies.keySet()) {
             final LogEfficiency[] les = logEfficiencies.get(log);
             final PD pd = bullet.getPD();
             LogPrediction logPrediction = pd.getLogPrediction(log);
             if (logPrediction == null) {
                 logPrediction = getLogPrediction(query, log.getRecordsIterator(query), bullet.getSpeed(), bullet.getBulletShadows());
             }
-            System.out.println("Calculate log efficiency new: " + Arrays.toString(log.getAttributes()) + ": " + ((EnemyGunRTreeLog)log).getLogType());
-            System.out.println("Fire time: " + bullet.getWave().getLaunchTime());
-            System.out.println("State: " + bullet.getState());
-            logPrediction.calculateEfficiency(bullet, isHit);
+            System.out.println("Calculate log efficiency new: " + Arrays.toString(log.getAttributes()));
+            logPrediction.calculateEfficiency(bullet);
             for (LogEfficiency le : les) {
                 le.update(bullet, logPrediction);
             }

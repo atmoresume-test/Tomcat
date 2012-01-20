@@ -63,12 +63,9 @@ public class EnemyLogSet extends LogSet<EnemyGunRTreeLog, LxxDataPoint<Undirecte
     }
 
     private void updateLogs(LXXBullet bullet, EnemyGunRTreeLog.LogType logType) {
-        updateLogEfficiencies(bullet, logType == EnemyGunRTreeLog.LogType.HIT_LOG);
+        updateLogEfficiencies(bullet);
         final double direction = bullet.getTargetLateralDirection();
-        final double undirectedGuessFactor = (logType == EnemyGunRTreeLog.LogType.HIT_LOG
-                ? bullet.getRealBearingOffsetRadians()
-                : bullet.getWave().getHitBearingOffsetInterval().center()
-        ) / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
+        final double undirectedGuessFactor = bullet.getRealBearingOffsetRadians() / LXXUtils.getMaxEscapeAngle(bullet.getSpeed());
         final boolean isVisitLogsEnabled = office.getStatisticsManager().getEnemyHitRate().getHitCount() >= 4;
         final UndirectedGuessFactor payload = new UndirectedGuessFactor(undirectedGuessFactor, direction);
 

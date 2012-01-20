@@ -5,6 +5,7 @@
 package lxx.lms;
 
 import lxx.bullets.LXXBullet;
+import lxx.bullets.LXXBulletState;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXUtils;
@@ -26,16 +27,15 @@ public class LogPrediction {
         return bearingOffsets;
     }
 
-    public void calculateEfficiency(LXXBullet bullet, boolean isHit) {
+    public void calculateEfficiency(LXXBullet bullet) {
         final IntervalDouble effectiveInterval;
+        boolean isHit = bullet.getState() == LXXBulletState.HITTED || bullet.getState() == LXXBulletState.INTERCEPTED;
         if (isHit) {
             final double robotHalfSizeRadians = LXXUtils.getRobotWidthInRadians(bullet.getFirePosition(), bullet.getTarget()) / 2;
             final double currentBO = bullet.getRealBearingOffsetRadians();
-            System.out.println("1 - " + bullet + ": " + currentBO);
             effectiveInterval = new IntervalDouble(currentBO - robotHalfSizeRadians, currentBO + robotHalfSizeRadians);
         } else {
             final IntervalDouble hitInterval = bullet.getWave().getHitBearingOffsetInterval();
-            System.out.println("2 - " + bullet + ": " + hitInterval.center());
             effectiveInterval = new IntervalDouble(hitInterval.center() - hitInterval.getLength() * 0.4,
                     hitInterval.center() + hitInterval.getLength() * 0.4);
         }
