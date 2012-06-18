@@ -8,6 +8,7 @@ import lxx.bullets.AbstractGFAimingPredictionData;
 import lxx.bullets.LXXBullet;
 import lxx.paint.LXXGraphics;
 import lxx.targeting.tomcat_claws.data_analise.DataView;
+import lxx.ts_log.TurnSnapshot;
 import lxx.utils.APoint;
 import lxx.utils.IntervalDouble;
 import lxx.utils.LXXConstants;
@@ -31,8 +32,9 @@ public class TCPredictionData extends AbstractGFAimingPredictionData {
     private final APoint initialPos;
     private final Map<DataView, List<IntervalDouble>> dataViewsPredictions;
 
-    public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos, Map<DataView, List<IntervalDouble>> dataViewsPredictions) {
-        super(null, -1);
+    public TCPredictionData(Map<Double, Double> matches, List<APoint> predictedPoses, APoint robotPos, APoint initialPos,
+                            Map<DataView, List<IntervalDouble>> dataViewsPredictions, TurnSnapshot ts) {
+        super(ts, -1);
         this.matches = matches;
         this.predictedPoses = predictedPoses;
         this.robotPos = robotPos;

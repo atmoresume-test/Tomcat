@@ -18,4 +18,8 @@ public class GunKdTreeEntry extends LxxDataPoint<Object> {
         super(LocationFactory.getNormalLocation(ts, attrs), ts, attrs);
     }
 
+    public GunKdTreeEntry(double[] location, TurnSnapshot ts, Attribute[] attrs) {
+        super(location, ts, attrs);
+    }
+
 }

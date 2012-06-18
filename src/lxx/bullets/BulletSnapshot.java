@@ -4,7 +4,11 @@ import lxx.LXXRobotSnapshot;
 import lxx.utils.APoint;
 import robocode.util.Utils;
 
-public class BulletSnapshot {
+import java.io.Serializable;
+
+public class BulletSnapshot implements Serializable {
+
+    private static final long serialVersionUID = 3160465167345688043L;
 
     private final LXXRobotSnapshot ownerState;
     private final LXXRobotSnapshot targetState;

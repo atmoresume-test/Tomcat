@@ -36,8 +36,8 @@ public class AttributesManager {
     public static final Attribute enemyBearingOffsetOnSecondBullet = new Attribute("Enemy bearing offset on second bullet", -50, 50, new EnemyBearingOffsetOnSecondBullet());
     public static final Attribute enemyTimeSinceLastDirChange = new Attribute("Enemy time since last direction change", 0, 2000, new EnemyTimeSinceDirChange());
     public static final Attribute enemyBearingToMe = new Attribute("Enemy bearing to me", -180, 180, new EnemyBearingToMe());
-    public static final Attribute lastVisitedGF1 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(1));
-    public static final Attribute lastVisitedGF2 = new Attribute("Enemy last visited gf", -1.1, 1.1, new LastVisitedGF(2));
+    public static final Attribute lastVisitedGF1 = new Attribute("Enemy last visited gf 1", -1.1, 1.1, new LastVisitedGF(1));
+    public static final Attribute lastVisitedGF2 = new Attribute("Enemy last visited gf 2", -1.1, 1.1, new LastVisitedGF(2));
 
     public static final Attribute myLateralSpeed = new Attribute("My lateral speed", 0, 8, new MyLateralSpeed());
     public static final Attribute myAcceleration = new Attribute("My acceleration", -2, 1, new MyAcceleration());

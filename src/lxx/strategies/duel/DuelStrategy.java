@@ -10,6 +10,7 @@ import lxx.office.Office;
 import lxx.strategies.*;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
+import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.LXXConstants;
 import robocode.util.Utils;
 
@@ -24,6 +25,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     private final Movement withBulletsMovement;
 
     private Target target;
+    private final TurnSnapshotsLog turnSnapshotsLog;
 
     public DuelStrategy(Tomcat robot,
                         Movement withBulletsMovement,
@@ -37,6 +39,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
 
         this.targetManager = targetManager;
         this.enemyBulletManager = enemyBulletManager;
+        turnSnapshotsLog = office.getTurnSnapshotsLog();
     }
 
     public boolean match() {
@@ -71,7 +74,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
         if (target == null) {
             return new GunDecision(Utils.normalRelativeAngle(-robot.getGunHeadingRadians()), null);
         }
-        return gun.getGunDecision(target, firePower);
+        return gun.getGunDecision(turnSnapshotsLog.getLastSnapshot(target), firePower);
     }
 
     protected double selectFirePower(Target target) {

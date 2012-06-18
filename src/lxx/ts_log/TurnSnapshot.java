@@ -16,7 +16,9 @@ import java.io.Serializable;
  * Date: 10.03.2010
  */
 public class TurnSnapshot implements Serializable {
-    
+
+    private static final long serialVersionUID = 3833257765699042046L;
+
     private final long time;
     private final int round;
     public final MySnapshot mySnapshot;

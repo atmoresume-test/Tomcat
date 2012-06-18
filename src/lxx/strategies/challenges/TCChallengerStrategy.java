@@ -64,7 +64,8 @@ public class TCChallengerStrategy extends AbstractStrategy {
         if (target == null) {
             return new GunDecision(Utils.normalRelativeAngle(-robot.getGunHeadingRadians()), null);
         }
-        return gun.getGunDecision(target, firePower);
+        throw new RuntimeException("Fix me");
+        //return gun.getGunDecision(target, firePower);
     }
 
     protected double selectFirePower(Target target) {

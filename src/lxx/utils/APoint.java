@@ -4,11 +4,13 @@
 
 package lxx.utils;
 
+import java.io.Serializable;
+
 /**
  * User: jdev
  * Date: 31.10.2009
  */
-public interface APoint {
+public interface APoint extends Serializable {
 
     double getX();
 

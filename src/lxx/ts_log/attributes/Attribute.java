@@ -15,7 +15,7 @@ public class Attribute {
 
     private static int idSequence = 0;
 
-    private final String name;
+    public final String name;
     public final IntervalDouble maxRange;
     public final AttributeValueExtractor extractor;
     public final int id;

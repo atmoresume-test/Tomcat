@@ -103,7 +103,7 @@
 
         <echo file="${bin.dir}/lxx/${robot.name}.data/${robot.name}.properties">lxx.${robot.name}.mode=normal
             aegm.debug=true
-            record_my_waves=true
+            record_log=true
         </echo>
 
         <jar destfile="${builds.dir}\lxx.${robot.name}_${robot.version.dbg}.jar" compress="true">

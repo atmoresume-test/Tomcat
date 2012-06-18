@@ -10,15 +10,19 @@ import static java.lang.Math.signum;
 
 public class MySnapshot extends RobotSnapshot {
 
+    private static final long serialVersionUID = 6973016020185992456L;
+
     private List<BulletSnapshot> bullets;
     private final double gunCoolingRate;
     private final double last10TicksDist;
+    private double gunHeadingRadians;
 
     public MySnapshot(BasicRobot currentState) {
         super(currentState);
         last10TicksDist = 0;
         bullets = currentState.getBulletsInAir();
         gunCoolingRate = currentState.getGunCoolingRate();
+        gunHeadingRadians = currentState.getGunHeadingRadians();
     }
 
     public MySnapshot(MySnapshot prevState, BasicRobot currentState, double last10TicksDist) {
@@ -27,6 +31,7 @@ public class MySnapshot extends RobotSnapshot {
 
         bullets = currentState.getBulletsInAir();
         gunCoolingRate = currentState.getGunCoolingRate();
+        gunHeadingRadians = currentState.getGunHeadingRadians();
     }
 
     public MySnapshot(MySnapshot state1, MySnapshot state2, double interpolationK) {
@@ -34,6 +39,7 @@ public class MySnapshot extends RobotSnapshot {
         last10TicksDist = state1.getLast10TicksDist() + (state2.getLast10TicksDist() - state1.getLast10TicksDist()) * interpolationK;
         bullets = state2.getBulletsInAir();
         gunCoolingRate = state2.gunCoolingRate;
+        gunHeadingRadians = state2.gunHeadingRadians;
     }
 
     public double getLast10TicksDist() {
@@ -62,5 +68,9 @@ public class MySnapshot extends RobotSnapshot {
 
     public void setBullets(List<BulletSnapshot> bullets) {
         this.bullets = bullets;
+    }
+
+    public double getGunHeadingRadians() {
+        return gunHeadingRadians;
     }
 }

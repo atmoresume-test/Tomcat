@@ -6,6 +6,8 @@ import static java.lang.Math.signum;
 
 public abstract class RobotSnapshot implements LXXRobotSnapshot {
 
+    private static final long serialVersionUID = -3023363647215827559L;
+
     private final LXXPoint position;
     private final double speed;
     private final BattleField battleField;

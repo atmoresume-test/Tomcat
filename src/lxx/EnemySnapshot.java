@@ -9,6 +9,8 @@ import static java.lang.Math.*;
 
 public class EnemySnapshot extends RobotSnapshot {
 
+    private static final long serialVersionUID = -2244718860747735457L;
+
     private final long lastDirChangeTime;
     private final List<Double> visits;
     private final double turnRateRadians;

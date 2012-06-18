@@ -5,6 +5,7 @@
 package lxx.strategies;
 
 import lxx.targeting.Target;
+import lxx.ts_log.TurnSnapshot;
 
 /**
  * User: jdev
@@ -12,6 +13,6 @@ import lxx.targeting.Target;
  */
 public interface Gun {
 
-    GunDecision getGunDecision(Target t, double firePower);
+    GunDecision getGunDecision(TurnSnapshot ts, double firePower);
 
 }

@@ -7,6 +7,7 @@ package lxx.utils;
 import robocode.util.Utils;
 
 import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
 
 import static java.lang.Math.max;
 
@@ -14,7 +15,9 @@ import static java.lang.Math.max;
  * User: jdev
  * Date: 17.02.2011
  */
-public class BattleField {
+public class BattleField implements Serializable {
+
+    private static final long serialVersionUID = -7286393810793227806L;
 
     public static final double WALL_STICK = 140;
 
@@ -166,7 +169,9 @@ public class BattleField {
         return availableBattleFieldRectangle.contains(point.getX(), point.getY());
     }
 
-    public class Wall {
+    public class Wall implements Serializable {
+
+        private static final long serialVersionUID = 3185677919265254717L;
 
         public final WallType wallType;
         public final APoint ccw;
@@ -182,12 +187,14 @@ public class BattleField {
         }
     }
 
-    public static enum WallType {
+    public static enum WallType implements Serializable {
 
         TOP(LXXConstants.RADIANS_0, LXXConstants.RADIANS_90, LXXConstants.RADIANS_270),
         RIGHT(LXXConstants.RADIANS_90, LXXConstants.RADIANS_180, LXXConstants.RADIANS_0),
         BOTTOM(LXXConstants.RADIANS_180, LXXConstants.RADIANS_270, LXXConstants.RADIANS_90),
         LEFT(LXXConstants.RADIANS_270, LXXConstants.RADIANS_0, LXXConstants.RADIANS_180);
+
+        private static final long serialVersionUID = 3185677919265254712L;
 
         public final double fromCenterAngle;
 

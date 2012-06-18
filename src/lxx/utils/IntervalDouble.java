@@ -4,10 +4,14 @@
 
 package lxx.utils;
 
+import java.io.Serializable;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class IntervalDouble implements Comparable<IntervalDouble> {
+public class IntervalDouble implements Comparable<IntervalDouble>, Serializable {
+
+    private static final long serialVersionUID = 922927548370039742L;
 
     public double a;
     public double b;

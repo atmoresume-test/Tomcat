@@ -20,14 +20,24 @@ import robocode.Event;
  */
 public class DataViewManager implements RobotListener {
 
-    private static final DataView mainDataView = new SingleSourceDataView(new Attribute[]{
+    private static final DataView mainDataView1 = new SingleSourceDataView2(new Attribute[]{
             AttributesManager.enemyAcceleration,
-            AttributesManager.enemySpeed,
+            AttributesManager.enemyTurnRate,
             AttributesManager.enemyDistanceToForwardWall,
-            AttributesManager.enemyBearingToForwardWall,
-    }, new double[]{0.25, 0.75}, "Main");
+            AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.lastVisitedGF1,
+            AttributesManager.lastVisitedGF2,
+    }, new double[]{0.94, 0.57, 0.95, 0.15, 0.07, 0.38}, "Main");
 
-    private static final DataView asDataView = new SingleSourceDataView(new Attribute[]{
+    private static final DataView mainDataView2 = new SingleSourceDataView2(new Attribute[]{
+            AttributesManager.enemySpeed,
+            AttributesManager.enemyAcceleration,
+            AttributesManager.enemyDistanceToForwardWall,
+            AttributesManager.firstBulletFlightTimeToEnemy,
+            AttributesManager.enemyTimeSinceLastDirChange,
+    }, new double[]{0.65, 0.49, 0.43, 0.79, 0.03}, "Main");
+
+    /*private static final DataView asDataView = new SingleSourceDataView(new Attribute[]{
             AttributesManager.enemyAcceleration,
             AttributesManager.enemySpeed,
             AttributesManager.enemyDistanceToForwardWall,
@@ -63,9 +73,9 @@ public class DataViewManager implements RobotListener {
             AttributesManager.enemyBearingToMe,
             AttributesManager.enemyTimeSinceLastDirChange,
             AttributesManager.enemyTurnRate
-    }, new double[]{0.5, 0.5}, "Time since dir change");
+    }, new double[]{0.5, 0.5}, "Time since dir change");*/
 
-    private DataView[] duelViews = {mainDataView, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView};
+    private DataView[] duelViews = {mainDataView1, mainDataView2/*, asDataView, asDataView2, distanceDataView, timeSinceDirChangeDataView*/};
 
     private final TargetManager targetManager;
     private final TurnSnapshotsLog turnSnapshotLog;

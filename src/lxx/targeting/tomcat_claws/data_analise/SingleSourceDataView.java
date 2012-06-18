@@ -28,11 +28,17 @@ public class SingleSourceDataView implements DataView {
     private final KdTreeAdapter<GunKdTreeEntry> dataSource;
     private final double[] weights;
     private final String name;
+    private final int entriesLimit;
 
-    public SingleSourceDataView(Attribute[] attributes, double[] weights, String name) {
+    public SingleSourceDataView(Attribute[] attributes, double[] weights, String name, int entriesLimit) {
         this.weights = weights;
         this.name = name;
+        this.entriesLimit = entriesLimit;
         dataSource = new KdTreeAdapter<GunKdTreeEntry>(attributes, 50000);
+    }
+
+    public SingleSourceDataView(Attribute[] attributes, double[] weights, String name) {
+        this(attributes, weights, name, 15);
     }
 
     public Collection<TurnSnapshot> getDataSet(TurnSnapshot ts) {
@@ -67,7 +73,7 @@ public class SingleSourceDataView implements DataView {
                 dataSet.add(e.ts);
                 coveredTimeIntervals.add(new IntervalLong(eRoundTime - 10, eRoundTime + 10));
             }
-            if (dataSet.size() > 15) {
+            if (dataSet.size() > entriesLimit) {
                 break;
             }
         }

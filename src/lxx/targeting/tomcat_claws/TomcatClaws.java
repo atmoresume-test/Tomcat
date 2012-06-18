@@ -4,15 +4,14 @@
 
 package lxx.targeting.tomcat_claws;
 
-import lxx.Tomcat;
+import lxx.LXXRobotSnapshot;
+import lxx.MySnapshot;
 import lxx.bullets.enemy.BearingOffsetDanger;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
-import lxx.targeting.Target;
 import lxx.targeting.tomcat_claws.data_analise.DataView;
 import lxx.targeting.tomcat_claws.data_analise.DataViewManager;
 import lxx.ts_log.TurnSnapshot;
-import lxx.ts_log.TurnSnapshotsLog;
 import lxx.utils.*;
 import robocode.Rules;
 import robocode.util.Utils;
@@ -29,8 +28,6 @@ public class TomcatClaws implements Gun {
 
     private static final int AIMING_TIME = 2;
 
-    private final Tomcat robot;
-    private final TurnSnapshotsLog log;
     private final DataViewManager dataViewManager;
 
     private APoint robotPosAtFireTime;
@@ -39,36 +36,41 @@ public class TomcatClaws implements Gun {
     private double bestBearingOffset;
     private Map<DataView, List<IntervalDouble>> dataViewsPredictions;
 
-    public TomcatClaws(Tomcat robot, TurnSnapshotsLog log, DataViewManager dataViewManager) {
-        this.robot = robot;
-        this.log = log;
+    public TomcatClaws(DataViewManager dataViewManager) {
         this.dataViewManager = dataViewManager;
     }
 
-    public GunDecision getGunDecision(Target t, double firePower) {
+    public GunDecision getGunDecision(TurnSnapshot ts, double firePower) {
+        final MySnapshot robot = ts.mySnapshot;
+        final LXXRobotSnapshot t = ts.enemySnapshot;
         final double angleToTarget = robot.angleTo(t);
         final APoint initialPos = t.getPosition();
-        robotPosAtFireTime = robot.project(robot.getCurrentSnapshot().getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
+        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
 
         if (robot.getTurnsToGunCool() > AIMING_TIME || t.getEnergy() == 0) {
             futurePoses = null;
-            return new GunDecision(getGunTurnAngle(angleToTarget), new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos, new HashMap<DataView, List<IntervalDouble>>()));
+            return new GunDecision(getGunTurnAngle(angleToTarget, robot), new TCPredictionData(bearingOffsetDangers, futurePoses,
+                    robotPosAtFireTime, initialPos, new HashMap<DataView, List<IntervalDouble>>(), ts));
         }
 
         if (futurePoses == null) {
-            bestBearingOffset = getBearingOffset(t, Rules.getBulletSpeed(firePower), log.getLastSnapshot(t));
+            bestBearingOffset = getBearingOffset(ts, Rules.getBulletSpeed(firePower));
         }
 
-        return new GunDecision(getGunTurnAngle(Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(t) + bestBearingOffset)),
-                new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos, dataViewsPredictions));
+        return new GunDecision(getGunTurnAngle(Utils.normalAbsoluteAngle(robotPosAtFireTime.angleTo(t) + bestBearingOffset), robot),
+                new TCPredictionData(bearingOffsetDangers, futurePoses, robotPosAtFireTime, initialPos, dataViewsPredictions, ts));
     }
 
 
-    private double getGunTurnAngle(double angleToPredictedPos) {
+    private double getGunTurnAngle(double angleToPredictedPos, MySnapshot robot) {
         return Utils.normalRelativeAngle(angleToPredictedPos - robot.getGunHeadingRadians());
     }
 
-    private double getBearingOffset(Target t, double bulletSpeed, final TurnSnapshot snapshot) {
+    public double getBearingOffset(final TurnSnapshot snapshot, double bulletSpeed) {
+        // todo: fix me, added for attrs tuning tool
+        final MySnapshot robot = snapshot.mySnapshot;
+        robotPosAtFireTime = robot.project(robot.getAbsoluteHeadingRadians(), robot.getSpeed() * AIMING_TIME);
+        final LXXRobotSnapshot t = snapshot.enemySnapshot;
         dataViewsPredictions = new HashMap<DataView, List<IntervalDouble>>();
         futurePoses = new ArrayList<APoint>();
         final List<IntervalDoubleDanger> botIntervalsRadians = new ArrayList<IntervalDoubleDanger>();
@@ -121,7 +123,7 @@ public class TomcatClaws implements Gun {
         return maxDangerBo.bearingOffset;
     }
 
-    private List<APoint> getFuturePoses(Target t, Collection<TurnSnapshot> starts, double bulletSpeed, Map<TurnSnapshot, APoint> futurePosesCache) {
+    private List<APoint> getFuturePoses(LXXRobotSnapshot t, Collection<TurnSnapshot> starts, double bulletSpeed, Map<TurnSnapshot, APoint> futurePosesCache) {
         final List<APoint> futurePoses = new ArrayList<APoint>();
         for (TurnSnapshot start : starts) {
             APoint futurePos = futurePosesCache.get(start);
@@ -137,13 +139,13 @@ public class TomcatClaws implements Gun {
         return futurePoses;
     }
 
-    private APoint getFuturePos(Target t, TurnSnapshot start, double bulletSpeed) {
+    private APoint getFuturePos(LXXRobotSnapshot t, TurnSnapshot start, double bulletSpeed) {
         final LXXPoint targetPos = t.getPosition();
         APoint futurePos = new LXXPoint(targetPos);
 
         TurnSnapshot currentSnapshot = start.next;
         currentSnapshot = skip(currentSnapshot, AIMING_TIME);
-        final BattleField battleField = robot.getBattleField();
+        final BattleField battleField = t.getBattleField();
         final double absoluteHeadingRadians = t.getAbsoluteHeadingRadians();
         BulletState bs;
         final double speedSum = bulletSpeed + Rules.MAX_VELOCITY;
@@ -195,6 +197,7 @@ public class TomcatClaws implements Gun {
         }
         return BulletState.COMING;
     }
+
     private enum BulletState {
         COMING,
         HITTING,

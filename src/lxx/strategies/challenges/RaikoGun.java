@@ -8,6 +8,7 @@ import lxx.RobotListener;
 import lxx.strategies.Gun;
 import lxx.strategies.GunDecision;
 import lxx.targeting.Target;
+import lxx.ts_log.TurnSnapshot;
 import robocode.AdvancedRobot;
 import robocode.Condition;
 import robocode.Event;
@@ -191,7 +192,7 @@ public class RaikoGun implements Gun, RobotListener {
         }
     }
 
-    public GunDecision getGunDecision(Target t, double firePower) {
+    public GunDecision getGunDecision(TurnSnapshot ts, double firePower) {
         return null;
     }
 
