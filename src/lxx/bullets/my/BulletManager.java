@@ -157,7 +157,9 @@ public class BulletManager implements RobotListener, WaveCallback {
                 return;
             }
             LXXGraphics g = ((LXXPaintEvent) event).getGraphics();
-            firstBullet.getAimPredictionData().paint(g, firstBullet);
+            for (LXXBullet b : bullets) {
+                b.getAimPredictionData().paint(g, b);
+            }
         } else if (event instanceof LXXKeyEvent) {
             if (Character.toUpperCase(((LXXKeyEvent) event).getKeyChar()) == 'G') {
                 paintEnabled = !paintEnabled;
@@ -182,7 +184,7 @@ public class BulletManager implements RobotListener, WaveCallback {
         final LXXBullet b = bulletsByWaves.remove(w);
         final double lateralDirection = LXXUtils.lateralDirection(w.getSourceState(), w.getTargetState());
         final double guessFactor = w.getHitBearingOffsetInterval().center() * lateralDirection / LXXUtils.getMaxEscapeAngle(w.getSpeed());
-        ((Target)b.getTarget()).addVisit(guessFactor);
+        ((Target) b.getTarget()).addVisit(guessFactor);
     }
 
     public List<BulletSnapshot> getBulletSnapshots() {

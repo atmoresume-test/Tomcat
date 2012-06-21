@@ -90,8 +90,8 @@ public class LXXGraphics {
         drawLine(west, east);
     }
 
-    public void drawCircle(APoint position, double diameter) {
-        drawOval(position.getX(), position.getY(), diameter, diameter);
+    public void drawCircle(APoint position, double radius) {
+        drawOval(position.getX(), position.getY(), radius * 2, radius * 2);
     }
 
     public void drawArrow(APoint from, double direction, int length) {

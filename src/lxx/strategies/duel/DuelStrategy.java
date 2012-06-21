@@ -21,17 +21,17 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     protected final EnemyBulletManager enemyBulletManager;
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
-    private final Movement withBulletsMovement;
+    protected final Movement wsMovement;
 
     protected Target target;
 
     public DuelStrategy(Tomcat robot,
-                        Movement withBulletsMovement,
+                        Movement wsMovement,
                         Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager,
                         EnemyBulletManager enemyBulletManager, Office office) {
         super(robot, office);
 
-        this.withBulletsMovement = withBulletsMovement;
+        this.wsMovement = wsMovement;
         this.gun = gun;
         this.firePowerSelector = firePowerSelector;
 
@@ -64,7 +64,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
-        return withBulletsMovement.getMovementDecision();
+        return wsMovement.getMovementDecision();
     }
 
     protected GunDecision getGunDecision(Target target, double firePower) {

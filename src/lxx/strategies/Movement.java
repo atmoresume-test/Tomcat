@@ -4,6 +4,8 @@
 
 package lxx.strategies;
 
+import lxx.utils.APoint;
+
 /**
  * User: jdev
  * Date: 12.02.2011
@@ -11,5 +13,7 @@ package lxx.strategies;
 public interface Movement {
 
     MovementDecision getMovementDecision();
+
+    APoint getDestination();
 
 }
