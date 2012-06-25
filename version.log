@@ -1,3 +1,13 @@
+v. 3.63
+* Use bullet fire pos as center for surfing
+
+v. 3.62
+* Increase distance after enemy death
+* Bullets per log count increased to 11 in movement
+
+v. 3.60a
+* Dead code for zero lateral directions processing in movement removed, minor refactoring
+
 v. 3.58
 * Flattener enabling algorithm changed - now flattener enabled only if enemy hit rate > 5%
 
