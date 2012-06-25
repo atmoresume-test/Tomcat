@@ -27,6 +27,8 @@ public class StrategySelector {
 
     private final List<Strategy> strategies = new ArrayList<Strategy>();
 
+    private Strategy prevStrategy;
+
     public StrategySelector(Tomcat robot, Office office) {
         final TargetManager targetManager = office.getTargetManager();
         final EnemyBulletManager enemyBulletManager = office.getEnemyBulletManager();
@@ -65,6 +67,10 @@ public class StrategySelector {
     public Strategy selectStrategy() {
         for (Strategy s : strategies) {
             if (s.match()) {
+                if (prevStrategy != s) {
+                    System.out.println("New Strategy: " + s.getClass().getSimpleName());
+                }
+                prevStrategy = s;
                 return s;
             }
         }

@@ -64,6 +64,7 @@ public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelec
     }
 
     protected MovementDecision getMovementDecision() {
+        ((WaveSurfingMovement)wsMovement).getDistanceController().setDesiredDistance(DistanceController.SIMPLE_DISTANCE);
         return wsMovement.getMovementDecision();
     }
 

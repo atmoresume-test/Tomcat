@@ -6,11 +6,9 @@ import lxx.bullets.LXXBullet;
 import lxx.bullets.enemy.EnemyBulletManager;
 import lxx.office.Office;
 import lxx.paint.LXXGraphics;
-import lxx.strategies.FirePowerSelector;
-import lxx.strategies.Gun;
-import lxx.strategies.GunDecision;
-import lxx.strategies.Movement;
+import lxx.strategies.*;
 import lxx.strategies.duel.DuelStrategy;
+import lxx.strategies.duel.WaveSurfingMovement;
 import lxx.targeting.Target;
 import lxx.targeting.TargetManager;
 import lxx.utils.APoint;
@@ -20,11 +18,7 @@ import robocode.Rules;
 import robocode.util.Utils;
 
 import java.awt.*;
-import java.util.LinkedList;
 import java.util.List;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * User: Aleksey Zhidkov
@@ -36,6 +30,12 @@ public class BulletShieldingStrategy extends DuelStrategy {
 
     public BulletShieldingStrategy(Tomcat robot, Movement withBulletsMovement, Gun gun, FirePowerSelector firePowerSelector, TargetManager targetManager, EnemyBulletManager enemyBulletManager, Office office) {
         super(robot, withBulletsMovement, gun, firePowerSelector, targetManager, enemyBulletManager, office);
+    }
+
+    @Override
+    protected MovementDecision getMovementDecision() {
+        ((WaveSurfingMovement)wsMovement).getDistanceController().setDesiredDistance(900);
+        return wsMovement.getMovementDecision();
     }
 
     @Override
@@ -54,7 +54,6 @@ public class BulletShieldingStrategy extends DuelStrategy {
 
     @Override
     protected GunDecision getGunDecision(Target target, double firePower) {
-        firePower = 0.1;
         final double ebSpeed = bulletToIntercept.getSpeed();
 
         final MySnapshot currentSnapshot = robot.getCurrentSnapshot();
@@ -66,7 +65,6 @@ public class BulletShieldingStrategy extends DuelStrategy {
         final double mbSpeed = Rules.getBulletSpeed(0.1);
         double mbTravelledDist = 0;
 
-        List<Object[]> debug = new LinkedList<Object[]>();
         double alpha;
         APoint[] intersection;
         while (true) {
@@ -89,20 +87,6 @@ public class BulletShieldingStrategy extends DuelStrategy {
                 pnt1 = ebPos;
                 pnt2 = LXXUtils.intersection(ebPos, ebNextPos, firePos, mbTravelledDist)[0];
             }
-
-            /*debug.add(new Object[]{pnt1, pnt2, mbTravelledDist, ebTravelledDist});
-            if (ebTravelledDist > 1700) {
-                for (Object[] o : debug) {
-                    final Double enemyBulletTravelledDistance = (Double) o[3];
-                    final Double myBulletTravelledDistance = (Double) o[2];
-                    final Double totalDistance = ebFirePos.aDistance(firePos);
-                    final Double myDistToPnt1 = firePos.aDistance((APoint) o[0]);
-                    final Double myDistToPnt2 = firePos.aDistance((APoint) o[1]);
-
-                    System.out.println(enemyBulletTravelledDistance);
-                }
-                break;
-            }*/
 
             ebTravelledDist += ebSpeed;
             mbTravelledDist += mbSpeed;

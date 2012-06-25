@@ -68,9 +68,6 @@ public class WaveSurfingMovement implements Movement, Painter {
         }
 
         final LXXRobotSnapshot opponent = duelOpponent == null ? null : duelOpponent.getCurrentSnapshot();
-        if (duelOpponent == null) {
-            distanceController.setDesiredDistance(900);
-        }
         final LXXPoint surfPoint = pointsGenerator.getSurfPoint(opponent, lxxBullets.get(0));
 
         return pointsGenerator.getMovementDecision(surfPoint, prevPrediction.minDangerPoint, robot.getCurrentSnapshot(), opponent);
@@ -200,6 +197,10 @@ public class WaveSurfingMovement implements Movement, Painter {
         for (WSPoint pnt : points) {
             g.drawCircle(pnt, 4);
         }
+    }
+
+    public DistanceController getDistanceController() {
+        return distanceController;
     }
 
     public class MovementDirectionPrediction {
