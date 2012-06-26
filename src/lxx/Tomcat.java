@@ -49,6 +49,7 @@ public class Tomcat extends BasicRobot {
     private TurnDecision turnDecision;
     private StrategySelector strategySelector;
     private Bullet bullet;
+    private long lastFireTime;
 
     public void run() {
         if (getBattleFieldWidth() > 1200 || getBattleFieldHeight() > 1200) {
@@ -97,6 +98,7 @@ public class Tomcat extends BasicRobot {
 
                 notifyListeners(new FireEvent(lxxBullet));
                 bullet = null;
+                lastFireTime = getTime();
             }
             notifyListeners(new TickEvent(getTime()));
             if (isPaintEnabled) {
@@ -195,5 +197,9 @@ public class Tomcat extends BasicRobot {
 
     public double getFirePower() {
         return turnDecision.getFirePower();
+    }
+
+    public long getLastFireTime() {
+        return lastFireTime;
     }
 }

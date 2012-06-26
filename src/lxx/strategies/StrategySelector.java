@@ -14,6 +14,7 @@ import lxx.strategies.challenges.TCChallengerStrategy;
 import lxx.strategies.duel.DuelFirePowerSelector;
 import lxx.strategies.duel.DuelStrategy;
 import lxx.strategies.duel.WaveSurfingMovement;
+import lxx.strategies.fatality.FatalityStrategy;
 import lxx.strategies.find_enemies.FindEnemiesStrategy;
 import lxx.strategies.win.WinStrategy;
 import lxx.targeting.TargetManager;
@@ -46,6 +47,7 @@ public class StrategySelector {
         if ("MCc".equals(PropertiesManager.getDebugProperty("lxx.Tomcat.mode"))) {
             strategies.add(new MCChallengerStrategy(robot, wsm, targetManager, enemyBulletManager));
         }
+        strategies.add(new FatalityStrategy(targetManager, enemyBulletManager, robot));
 
         final BulletShieldingStrategy bsStrategy = new BulletShieldingStrategy(robot,
                 wsm,
