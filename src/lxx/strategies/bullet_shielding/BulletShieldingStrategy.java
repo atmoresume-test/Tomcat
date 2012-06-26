@@ -47,8 +47,13 @@ public class BulletShieldingStrategy extends DuelStrategy {
 
         bulletToIntercept = bulletsOnAir.get(0);
 
+        if (targetManager.getDuelOpponent() == null) {
+            return true;
+        }
+
         return super.match() && bulletToIntercept.getBullet().getPower() > 0.2 &&
-                (target == null || target.getEnergy() > robot.getEnergy() * 1.2);
+                target.getEnergy() > robot.getEnergy() * 1.2 &&
+                robot.getEnergy() / 0.1 > target.getEnergy() / target.getFirePower() + 1;
 
     }
 

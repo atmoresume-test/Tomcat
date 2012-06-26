@@ -17,7 +17,7 @@ import static java.lang.Math.signum;
 
 public class DuelStrategy extends AbstractStrategy implements Radar, TargetSelector {
 
-    private final TargetManager targetManager;
+    protected final TargetManager targetManager;
     protected final EnemyBulletManager enemyBulletManager;
     private final Gun gun;
     private final FirePowerSelector firePowerSelector;
