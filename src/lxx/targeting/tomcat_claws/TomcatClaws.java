@@ -108,10 +108,8 @@ public class TomcatClaws implements Gun {
                 if (ival.a > wavePointBearingOffset) {
                     break;
                 } else if (ival.b < wavePointBearingOffset) {
-                } else if (abs(wavePointBearingOffset - ival.center()) < ival.getLength() / 4) {
-                    bearingOffsetDanger += ival.danger;
                 } else {
-                    bearingOffsetDanger += (ival.getLength() / 4) / abs(wavePointBearingOffset - ival.center()) * ival.danger;
+                    bearingOffsetDanger += (1 - abs(wavePointBearingOffset - ival.center()) / (ival.getLength() / 2)) * ival.danger;
                 }
             }
 
